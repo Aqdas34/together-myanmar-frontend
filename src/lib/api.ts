@@ -1,5 +1,7 @@
 // const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://187.124.159.29:8000/api/v1";
+// const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://187.124.159.29:8000/api/v1";
+// Replace the IP with your new secure domain
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://togethermyanmar.org/api/v1";
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
