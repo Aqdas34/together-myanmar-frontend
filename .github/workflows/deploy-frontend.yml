@@ -1,0 +1,68 @@
+name: Deploy Frontend (Bare Metal)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            # 1. Install Node.js if missing
+            if ! command -v node &> /dev/null; then
+              echo "Installing Node.js..."
+              curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+              sudo apt-get install -y nodejs
+            fi
+
+            # 2. Install PM2 if missing
+            if ! command -v pm2 &> /dev/null; then
+              echo "Installing PM2..."
+              sudo npm install -g pm2
+            fi
+
+            # 3. Setup Project Directory
+            mkdir -p ~/together-myanmar/frontend
+            cd ~/together-myanmar/frontend
+
+            # 4. Sync Code
+            if [ ! -d ".git" ]; then
+              echo "Directory not a git repo. Cleaning and cloning fresh..."
+              rm -rf ..?* .[!.]* * || true
+              git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git .
+            else
+              git pull origin main
+            fi
+
+            # 5. Move to frontend folder
+            # Since git pulls the root of the repo, we navigate to the frontend subfolder
+            # Note: Many repos have frontend/ in the root. 
+            # If your git pull already placed files here it's fine.
+            if [ -d "frontend" ]; then
+              cd frontend
+            fi
+
+            # 6. Build Environment Variables
+            if [ ! -z "${{ secrets.FRONTEND_PROD_ENV }}" ]; then
+              echo "${{ secrets.FRONTEND_PROD_ENV }}" > .env.local
+            fi
+
+            # 7. Install & Build
+            npm install --production=false
+            npm run build
+
+            # 8. Start/Restart with PM2
+            pm2 delete together-frontend || true
+            pm2 start npm --name "together-frontend" -- start -- -p 3000
+            pm2 save
