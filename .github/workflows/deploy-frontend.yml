@@ -45,15 +45,7 @@ jobs:
               git pull origin main
             fi
 
-            # 5. Move to frontend folder
-            # Since git pulls the root of the repo, we navigate to the frontend subfolder
-            # Note: Many repos have frontend/ in the root. 
-            # If your git pull already placed files here it's fine.
-            if [ -d "frontend" ]; then
-              cd frontend
-            fi
-
-            # 6. Build Environment Variables
+            # 5. Build Environment Variables
             if [ ! -z "${{ secrets.FRONTEND_PROD_ENV }}" ]; then
               echo "${{ secrets.FRONTEND_PROD_ENV }}" > .env.local
             fi
