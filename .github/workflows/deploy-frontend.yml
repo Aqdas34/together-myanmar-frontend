@@ -42,6 +42,7 @@ jobs:
               rm -rf ..?* .[!.]* * || true
               git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git .
             else
+              git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
               git pull origin main
             fi
 
