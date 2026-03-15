@@ -148,70 +148,138 @@ export default function ReconnectionPage() {
     { id: "connections", label: "My Network", count: connections.length },
     { id: "incoming", label: "Incoming", count: incoming.length },
     { id: "outgoing", label: "Pending", count: outgoing.length },
-    { id: "send", label: "Initialize Connection" },
+    { id: "send", label: "Send Request" },
   ];
 
   return (
     <div className="bg-white min-h-screen">
       {/* Hero */}
-      <header className="pt-20 pb-16 border-b border-slate-100 relative overflow-hidden">
+      <header className="pt-20 pb-16 border-b border-slate-100 relative overflow-hidden bg-slate-50">
         <div className="absolute inset-0 bg-pattern opacity-[0.03] pointer-events-none" />
-        <div className="mx-auto max-w-7xl px-6 relative z-10">
-          <span className="badge-primary mb-4 py-1 px-3">
-             Secure P2P Reconnection
+        <div className="mx-auto max-w-7xl px-6 relative z-10 text-center md:text-left">
+          <span className="badge-primary mb-4 py-1 px-3 inline-block">
+             Community Connection System
           </span>
-          <h1 className="hero-title mb-4">Network Reconnection</h1>
-          <p className="text-lg text-slate-500 max-w-2xl leading-relaxed">
-             Consent-based, identity-first reconnection matrix. No public profiles. No discovery leaks. Complete privacy.
+          <h1 className="hero-title mb-4">Reconnect Safely with the Myanmar Community</h1>
+          <p className="text-lg text-slate-600 max-w-3xl leading-relaxed mx-auto md:mx-0">
+             Many people from Myanmar have been forced to leave their homes and communities.
+             Friends, activists, and colleagues lost contact across borders.
+             The Together Myanmar Reconnection system allows people to reconnect privately and safely, using a consent-based process that protects personal information.
           </p>
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4">
+            <button onClick={() => { setTab("send"); document.getElementById("app")?.scrollIntoView({ behavior: "smooth" }); }} className="btn-primary text-lg px-8 py-4 w-full sm:w-auto flex items-center justify-center">
+              Send a Reconnection Request
+            </button>
+            <p className="text-sm text-slate-500 font-medium flex items-center justify-center sm:justify-start gap-2 mt-4 sm:mt-0">
+               <span className="text-emerald-500 text-lg">🔒</span> Designed with privacy and community safety in mind.
+            </p>
+          </div>
         </div>
       </header>
 
-      {/* Security Alert Bar */}
-      <div className="bg-slate-900 text-white px-6 py-4 border-b border-white/5">
-        <div className="mx-auto max-w-7xl flex items-center gap-4">
-           <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse-dot" />
-           <p className="text-[11px] font-black uppercase tracking-[0.2em] opacity-70">
-              Identity masking active · Mutual consent required for data exchange
-           </p>
-        </div>
-      </div>
+      {/* About & Why it Matters */}
+      <section className="py-16 bg-white px-6 border-b border-slate-100">
+        <div className="mx-auto max-w-7xl grid md:grid-cols-2 gap-12">
+          <div>
+            <h2 className="text-3xl font-black text-slate-900 mb-4 tracking-tight">About Together Myanmar</h2>
+            <p className="text-lg text-slate-600 leading-relaxed mb-10">
+              Together Myanmar is a global initiative connecting Myanmar communities worldwide through humanitarian support, digital platforms, and diaspora collaboration.
+            </p>
+            
+            <h2 className="text-3xl font-black text-slate-900 mb-4 tracking-tight">Why Reconnection Matters</h2>
+            <p className="text-lg text-slate-600 leading-relaxed">
+              After the crisis in Myanmar, many people were forced to leave their homes, communities, and networks. Friends, colleagues, activists, and families lost contact. Together Myanmar provides a secure way to reconnect safely without exposing personal data.
+            </p>
+          </div>
 
-      {/* Instructions Section */}
-      <div className="bg-white px-6 py-12 border-b border-slate-100">
-        <div className="mx-auto max-w-7xl">
-           <h2 className="text-[11px] font-black text-primary-600 uppercase tracking-widest mb-8">Handshake Protocol</h2>
-           <div className="grid gap-8 md:grid-cols-3">
-              <div className="flex gap-4 p-6 rounded-2xl bg-slate-50 border border-slate-100">
-                 <div className="h-10 w-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-primary-600 font-black text-sm shrink-0 shadow-sm">01</div>
-                 <div>
-                    <h3 className="text-[14px] font-black text-slate-900 uppercase tracking-tight mb-2">Initialize Handshake</h3>
-                    <p className="text-[13px] text-slate-500 font-medium leading-relaxed">
-                       Enter the Node Identity (Email) of the person you wish to connect with. Send a secure handshake request with an optional message.
-                    </p>
-                 </div>
-              </div>
-              <div className="flex gap-4 p-6 rounded-2xl bg-slate-50 border border-slate-100">
-                 <div className="h-10 w-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-primary-600 font-black text-sm shrink-0 shadow-sm">02</div>
-                 <div>
-                    <h3 className="text-[14px] font-black text-slate-900 uppercase tracking-tight mb-2">Mutual Consent</h3>
-                    <p className="text-[13px] text-slate-500 font-medium leading-relaxed">
-                       The recipient must manually review and accept your request. Both nodes remain isolated until mutual verification is achieved.
-                    </p>
-                 </div>
-              </div>
-              <div className="flex gap-4 p-6 rounded-2xl bg-slate-50 border border-slate-100">
-                 <div className="h-10 w-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-primary-600 font-black text-sm shrink-0 shadow-sm">03</div>
-                 <div>
-                    <h3 className="text-[14px] font-black text-slate-900 uppercase tracking-tight mb-2">Authenticated Chat</h3>
-                    <p className="text-[13px] text-slate-500 font-medium leading-relaxed">
-                       Once the handshake is confirmed, a secure end-to-end channel is established. You can now exchange encrypted messages and coordinate.
-                    </p>
-                 </div>
-              </div>
-           </div>
+          <div className="bg-slate-50 p-8 rounded-3xl border border-slate-200 shadow-sm flex flex-col justify-center">
+            <h3 className="text-xl font-black text-slate-900 mb-6 uppercase tracking-tight">Who Is This For?</h3>
+            <ul className="space-y-4">
+              {[
+                "Myanmar diaspora members",
+                "Activists and journalists",
+                "Students and alumni networks",
+                "Community organizers",
+                "Friends reconnecting after displacement"
+              ].map((item, i) => (
+                <li key={i} className="flex items-center gap-4 text-lg text-slate-700 font-medium">
+                  <span className="h-8 w-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center shrink-0">✓</span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* How It Works & Privacy */}
+      <section className="py-16 bg-slate-50 px-6 border-b border-slate-100">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid lg:grid-cols-2 gap-16">
+            
+            <div>
+              <h2 className="text-3xl font-black text-slate-900 mb-8 tracking-tight">How Reconnection Works</h2>
+              <div className="space-y-8">
+                <div className="flex gap-4">
+                   <div className="h-14 w-14 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-2xl shrink-0">📩</div>
+                   <div>
+                      <h3 className="text-xl font-black text-slate-900 mb-2">Step 1 – Send Request</h3>
+                      <p className="text-lg text-slate-600 leading-relaxed mb-2">Enter the email of someone you want to reconnect with.</p>
+                      <div className="text-sm font-mono text-slate-500 bg-slate-100 px-3 py-1.5 rounded inline-block font-bold">User A &rarr; Request &rarr; User B</div>
+                   </div>
+                </div>
+                <div className="flex gap-4">
+                   <div className="h-14 w-14 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-2xl shrink-0">✔</div>
+                   <div>
+                      <h3 className="text-xl font-black text-slate-900 mb-2">Step 2 – Consent Approval</h3>
+                      <p className="text-lg text-slate-600 leading-relaxed mb-2">They receive a private request and decide whether to accept.</p>
+                      <div className="text-sm font-mono text-slate-500 bg-slate-100 px-3 py-1.5 rounded inline-block font-bold">User B &rarr; Approve &rarr; Secure Chat</div>
+                   </div>
+                </div>
+                <div className="flex gap-4">
+                   <div className="h-14 w-14 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-2xl shrink-0">🔒</div>
+                   <div>
+                      <h3 className="text-xl font-black text-slate-900 mb-2">Step 3 – Private Chat</h3>
+                      <p className="text-lg text-slate-600 leading-relaxed">Once approved, a private conversation channel opens.</p>
+                   </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-8">
+              <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+                <h2 className="text-2xl font-black text-slate-900 mb-6 tracking-tight flex items-center gap-3">
+                  <span className="text-emerald-500">🛡️</span> Your Privacy Matters
+                </h2>
+                <ul className="space-y-4">
+                  {[
+                    "No public profiles",
+                    "No searchable directory",
+                    "Only consent-based connections",
+                    "Personal data remains private"
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-center gap-4 text-lg text-slate-700 font-medium">
+                      <span className="h-3 w-3 rounded-full bg-emerald-500 shrink-0" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="bg-amber-50 p-6 rounded-3xl border border-amber-200 flex flex-col sm:flex-row gap-5 text-amber-900 items-start">
+                <span className="text-3xl shrink-0">⚠️</span>
+                <div>
+                  <h4 className="font-black mb-2 uppercase tracking-tight text-sm">Safety Notice</h4>
+                  <p className="font-medium opacity-90 leading-relaxed text-sm lg:text-base">
+                    Together Myanmar is designed to protect user privacy. However, users should always exercise caution when sharing sensitive information online.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
 
       {/* Error bar */}
       {error && (
@@ -221,7 +289,7 @@ export default function ReconnectionPage() {
         </div>
       )}
 
-      <section className="bg-slate-50 px-6 py-16">
+      <section id="app" className="bg-slate-50 px-6 py-16">
         <div className="mx-auto max-w-7xl">
           
           <div className="flex flex-col lg:flex-row gap-12">
@@ -250,12 +318,12 @@ export default function ReconnectionPage() {
                </nav>
                
                <div className="mt-8 p-6 card-modern bg-white border-slate-200">
-                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 leading-none">Security Key</h4>
-                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 font-mono text-[11px] text-slate-600 break-all select-all">
-                     {mounted ? me?.id : "Initializing node..."}
+                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 leading-none">Your Connection Email</h4>
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 font-mono text-[11px] text-slate-600 break-all select-all flex items-center justify-center font-bold">
+                     {mounted ? me?.email : "Loading..."}
                   </div>
                   <p className="mt-4 text-[11px] font-medium text-slate-400 leading-relaxed">
-                    Share this unique token with trusted contacts to establish a secure handshake.
+                    Share your email address with trusted friends to receive connection requests.
                   </p>
                </div>
             </aside>
@@ -274,9 +342,9 @@ export default function ReconnectionPage() {
                   ) : connections.length === 0 ? (
                     <div className="card-modern py-32 bg-white border-dashed border-slate-200 text-center">
                       <div className="text-5xl mb-6 opacity-20">📡</div>
-                      <p className="text-xl font-bold text-slate-900 mb-2">Network Isolated</p>
-                      <p className="text-slate-500 font-medium mb-8">Establish a handshake to synchronize with other nodes.</p>
-                      <button onClick={() => setTab("send")} className="btn-primary">Initialize Link</button>
+                      <p className="text-xl font-bold text-slate-900 mb-2">No Active Connections</p>
+                      <p className="text-slate-500 font-medium mb-8">Send a request to safely reconnect with someone in the community.</p>
+                      <button onClick={() => setTab("send")} className="btn-primary">Send Request</button>
                     </div>
                   ) : (
                     <div className="grid gap-4 md:grid-cols-1">
@@ -286,15 +354,15 @@ export default function ReconnectionPage() {
                         return (
                           <div key={c.id} className="card-modern flex flex-col md:flex-row items-center justify-between gap-6 p-6 bg-white border-slate-200 shadow-sm hover:shadow-md transition-all">
                             <div className="flex items-center gap-6 w-full md:w-auto">
-                              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary-900 text-white shadow-lg overflow-hidden">
-                                 <span className="relative text-xl font-black italic tracking-tighter">Handshake</span>
+                              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary-100 text-primary-700 shadow-sm overflow-hidden text-2xl">
+                                 🤝
                               </div>
                               <div>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Authenticated Node</p>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Community Member</p>
                                 <p className="text-sm font-bold text-slate-900 mb-1 flex items-center gap-2">
                                    <span className="font-mono text-xs opacity-50">{partnerId.slice(0, 16)}…</span>
                                 </p>
-                                <p className="text-[11px] font-bold text-slate-400 uppercase">Synchronized: {formatDate(c.connected_at)}</p>
+                                <p className="text-[11px] font-bold text-slate-400 uppercase">Connected Since: {formatDate(c.connected_at)}</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-3 w-full md:w-auto">
@@ -302,14 +370,14 @@ export default function ReconnectionPage() {
                                 href={`/reconnection/messages/${c.id}`}
                                 className="btn-primary flex-1 md:flex-none justify-center px-6 py-2"
                               >
-                                Encrypted Chat
+                                Private Chat
                               </Link>
                               <button
                                 onClick={() => handleRemove(c.id)}
                                 disabled={busy}
                                 className="btn-ghost text-red-600 hover:bg-red-50 hover:text-red-700 px-4 py-2 border border-red-100"
                               >
-                                {busy ? "..." : "Sever Link"}
+                                {busy ? "..." : "Remove Connection"}
                               </button>
                             </div>
                           </div>
@@ -325,7 +393,7 @@ export default function ReconnectionPage() {
                 <div className="space-y-6">
                   {incoming.length === 0 ? (
                     <div className="card-modern py-32 bg-white border-dashed border-slate-200 text-center text-slate-400 font-bold uppercase tracking-widest text-[11px]">
-                      No inbound link requests.
+                      No pending connection requests.
                     </div>
                   ) : (
                     <div className="grid gap-6">
@@ -334,14 +402,14 @@ export default function ReconnectionPage() {
                         return (
                           <div key={req.id} className="card-modern overflow-hidden bg-white border-primary-200/50 shadow-xl shadow-primary-500/5">
                             <div className="bg-primary-50 px-6 py-2 border-b border-primary-100 flex items-center justify-between">
-                               <span className="text-[10px] font-black text-primary-700 uppercase tracking-widest">Inbound Link Request</span>
+                               <span className="text-[10px] font-black text-primary-700 uppercase tracking-widest">Connection Request</span>
                                <span className="text-[10px] font-bold text-primary-500">{formatDate(req.created_at)}</span>
                             </div>
                             <div className="p-8">
                                <div className="mb-6 flex flex-col md:flex-row md:items-center gap-4">
                                   <div className="h-12 w-12 rounded-xl bg-primary-100 flex items-center justify-center text-xl">👤</div>
                                   <div>
-                                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest leading-none mb-2">Requesting Identity</p>
+                                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest leading-none mb-2">From Identity</p>
                                     <p className="font-mono text-sm font-bold text-slate-900 break-all">{req.sender_id}</p>
                                   </div>
                                </div>
@@ -358,14 +426,14 @@ export default function ReconnectionPage() {
                                     disabled={busy}
                                     className="btn-primary flex-1 justify-center py-3"
                                   >
-                                    {busy ? "Applying..." : "Approve Handshake"}
+                                    {busy ? "Applying..." : "Approve Connection"}
                                   </button>
                                   <button
                                     onClick={() => handleRespond(req.id, false)}
                                     disabled={busy}
                                     className="btn-secondary flex-1 justify-center py-3 border-slate-300"
                                   >
-                                    {busy ? "..." : "Decline Link"}
+                                    {busy ? "..." : "Decline"}
                                   </button>
                                   <button
                                     onClick={() => handleBlock(req.sender_id)}
@@ -389,7 +457,7 @@ export default function ReconnectionPage() {
                 <div className="space-y-6">
                   {outgoing.length === 0 ? (
                     <div className="card-modern py-32 bg-white border-dashed border-slate-200 text-center text-slate-400 font-bold uppercase tracking-widest text-[11px]">
-                      No outbound links pending.
+                      No pending request sent.
                     </div>
                   ) : (
                     <div className="grid gap-4">
@@ -409,7 +477,7 @@ export default function ReconnectionPage() {
                                   </span>
                                   <span className="text-[10px] font-bold text-slate-300">{formatDate(req.created_at)}</span>
                                </div>
-                               <p className="text-[13px] font-bold text-slate-900 mb-1">Target Node: <span className="font-mono text-xs opacity-50">{req.receiver_id.slice(0, 16)}…</span></p>
+                               <p className="text-[13px] font-bold text-slate-900 mb-1">Sent to: <span className="font-mono text-xs opacity-50">{req.receiver_id.slice(0, 16)}…</span></p>
                                {req.message && (
                                  <p className="text-xs font-medium text-slate-500 italic truncate max-w-sm ml-1">&ldquo;{req.message}&rdquo;</p>
                                )}
@@ -420,7 +488,7 @@ export default function ReconnectionPage() {
                                 disabled={busy}
                                 className="btn-ghost text-slate-400 hover:text-slate-900 border border-slate-200 px-5 py-2 text-xs"
                               >
-                                {busy ? "..." : "Cancel Propagation"}
+                                {busy ? "..." : "Cancel Request"}
                               </button>
                             )}
                           </div>
@@ -435,9 +503,9 @@ export default function ReconnectionPage() {
               {tab === "send" && (
                 <div className="max-w-2xl">
                   <div className="card-modern bg-white p-10 border-slate-200 shadow-xl shadow-slate-200/50">
-                    <h2 className="text-2xl font-black text-slate-900 mb-2">Initialize Handshake</h2>
+                    <h2 className="text-2xl font-black text-slate-900 mb-2">Send Reconnection Request</h2>
                     <p className="text-slate-500 font-medium mb-8 leading-relaxed">
-                      Enter the target node identity key. Handshakes are unidirectional until mutual synchronization is confirmed.
+                      Enter the email address of the person you want to connect with. They will receive your request securely.
                     </p>
 
                     {sendSuccess && (
@@ -455,26 +523,26 @@ export default function ReconnectionPage() {
                     <form onSubmit={handleSendRequest} className="space-y-8">
                       <div className="space-y-2">
                         <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">
-                          Target Identity Key <span className="text-primary-600">*</span>
+                          Recipient Email Address <span className="text-primary-600">*</span>
                         </label>
                         <input
                           type="text"
                           required
                           value={receiverId}
                           onChange={(e) => setReceiverId(e.target.value)}
-                          placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                          placeholder="friend@example.com"
                           className="input-modern font-mono"
                         />
                       </div>
                       <div className="space-y-2">
                         <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">
-                          Identity Verification Note <span className="text-slate-300 font-normal italic">(Recommended)</span>
+                          Personal Message <span className="text-slate-300 font-normal italic">(Recommended)</span>
                         </label>
                         <textarea
                           rows={4}
                           value={requestMsg}
                           onChange={(e) => setRequestMsg(e.target.value)}
-                          placeholder="e.g. Identity: [Your Name]. Context: [Shared History]..."
+                          placeholder="e.g. Hi, this is [Your Name] from [Place/Time]..."
                           maxLength={500}
                           className="input-modern resize-none"
                         />
@@ -487,7 +555,7 @@ export default function ReconnectionPage() {
                         disabled={sendLoading}
                         className="btn-primary w-full justify-center py-4 text-[15px]"
                       >
-                        {sendLoading ? "Propagating Handshake..." : "Execute Handshake"}
+                        {sendLoading ? "Sending request..." : "Send Request"}
                       </button>
                     </form>
                   </div>
