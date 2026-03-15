@@ -38,10 +38,10 @@ function CopyButton({ value, label }: { value: string; label: string }) {
 }
 
 const IMPACT_ITEMS = [
-  { amount: "$10", icon: "📚", desc: "Covers hosting costs for one week, keeping the platform online for thousands." },
-  { amount: "$25", icon: "🛡️", desc: "Funds security updates that protect member privacy and data for a month." },
-  { amount: "$50", icon: "🌏", desc: "Supports moderation and community management for one month." },
-  { amount: "$100", icon: "🚀", desc: "Funds a new feature — helping more families reconnect and access resources." },
+  { amount: "$10", icon: "🌍", desc: "Helps keep the platform online and accessible to community members worldwide." },
+  { amount: "$25", icon: "🛡️", desc: "Supports security improvements that protect user privacy and data." },
+  { amount: "$50", icon: "🤝", desc: "Funds community moderation and safe discussions." },
+  { amount: "$100", icon: "💡", desc: "Helps develop new features that reconnect families and expand resources." },
 ];
 
 const BANK_DETAILS = [
@@ -64,9 +64,9 @@ export default function DonatePage() {
   const [activeMethod, setActiveMethod] = useState<Method>("bank");
 
   const methods: { id: Method; icon: string; label: string; sub: string }[] = [
-    { id: "bank",    icon: "🏦", label: "Local Bank",       sub: "Myanmar Transfers" },
-    { id: "wire",    icon: "🌐", label: "International",    sub: "IBAN / SWIFT" },
-    { id: "digital", icon: "📱", label: "Digital Pay",      sub: "PayPal / Apps" },
+    { id: "digital", icon: "💳", label: "Credit Card / Stripe", sub: "Global Cards & Apple Pay" },
+    { id: "wire",    icon: "🌐", label: "International Wire",   sub: "Wise / Bank Transfer" },
+    { id: "bank",    icon: "🏦", label: "Local Bank",           sub: "Myanmar Transfers" },
   ];
 
   return (
@@ -84,15 +84,13 @@ export default function DonatePage() {
             <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-6 leading-tight">
               Support Our <span className="text-primary-400">Mission</span>
             </h1>
-            <p className="text-lg text-slate-300 mb-10 leading-relaxed font-medium">
-              Your donation keeps Together Myanmar free, safe, and growing for every diaspora member.
-              We operate as a non-profit initiative dedicated to community empowerment.
+            <p className="text-lg text-primary-100 mb-10 leading-relaxed font-medium">
+              Your support helps Together Myanmar connect communities, protect privacy, and provide trusted resources for the global Myanmar diaspora.
             </p>
             
             <div className="flex flex-wrap justify-center gap-3">
-              {["100% Community Focus", "Tax-Deductible Receipts", "Quarterly Impact Reports"].map((item) => (
-                <div key={item} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[13px] font-bold tracking-tight">
-                   <span className="h-1.5 w-1.5 rounded-full bg-primary-400" />
+              {["✔ Non-profit initiative", "✔ Community-driven platform", "✔ Transparent reporting", "✔ Privacy-focused technology"].map((item) => (
+                <div key={item} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-[13px] font-bold tracking-tight text-white shadow-sm">
                    {item}
                 </div>
               ))}
@@ -104,11 +102,32 @@ export default function DonatePage() {
       <section className="bg-slate-50 px-6 py-20">
         <div className="mx-auto max-w-4xl space-y-16">
 
+          {/* Why Donate & Future Vision */}
+          <div className="grid md:grid-cols-2 gap-8 mb-16">
+             <div className="card-modern bg-white p-8 border-slate-200">
+               <h3 className="text-xl font-black text-slate-900 mb-4">Why Your Support Matters</h3>
+               <p className="text-slate-600 font-medium leading-relaxed mb-4">
+                  Together Myanmar is a community-driven platform providing secure connections, trusted resources, and collaboration spaces for Myanmar communities worldwide.
+               </p>
+               <p className="text-slate-600 font-medium leading-relaxed">
+                  Your donation helps keep the platform free, secure, and accessible to everyone.
+               </p>
+             </div>
+             <div className="card-modern bg-primary-50 p-8 border-none">
+               <h3 className="text-xl font-black text-primary-900 mb-4 tracking-tight">Future Impact Vision</h3>
+               <p className="text-primary-800 font-medium leading-relaxed">
+                  Your support helps us expand tools that reconnect families, strengthen diaspora collaboration, and share trusted resources for Myanmar communities worldwide.
+               </p>
+             </div>
+          </div>
+
           {/* Impact Metrics */}
           <div>
-            <div className="flex items-center gap-4 mb-8">
-               <div className="h-0.5 w-12 bg-primary-600 rounded-full" />
-               <h2 className="text-[11px] font-black text-primary-600 uppercase tracking-widest">Tangible Impact</h2>
+            <div className="flex items-center justify-between mb-8">
+               <div className="flex items-center gap-4">
+                  <div className="h-0.5 w-12 bg-primary-600 rounded-full" />
+                  <h2 className="text-[11px] font-black text-primary-600 uppercase tracking-widest">Tangible Impact</h2>
+               </div>
             </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {IMPACT_ITEMS.map((item) => (
@@ -123,12 +142,32 @@ export default function DonatePage() {
             </div>
           </div>
 
+          {/* Monthly Support Highlight */}
+          <div className="card-modern bg-gradient-to-r from-slate-900 to-slate-800 p-8 text-white relative overflow-hidden my-12 shadow-xl shadow-slate-900/10">
+            <div className="absolute right-0 bottom-0 text-9xl opacity-5">🔄</div>
+            <div className="relative z-10 grid md:grid-cols-2 gap-8 items-center">
+              <div>
+                <h3 className="text-2xl font-black mb-3">Become a Monthly Supporter</h3>
+                <p className="text-slate-300 font-medium leading-relaxed mb-6">
+                  Recurring support helps keep the platform sustainable and allows us to plan for the future.
+                </p>
+                <div className="flex gap-3">
+                   {["$10 / month", "$25 / month", "$50 / month"].map(amt => (
+                     <button key={amt} className="badge-modern bg-white/10 text-white border-white/20 px-4 py-2 hover:bg-white/20 transition-colors">
+                       {amt}
+                     </button>
+                   ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Donation Matrix */}
           <div className="grid lg:grid-cols-12 gap-12">
             <div className="lg:col-span-4 lg:sticky lg:top-24 h-fit space-y-4">
                <div className="mb-6">
-                  <h2 className="text-2xl font-black text-slate-900 tracking-tight">Donation Matrix</h2>
-                  <p className="text-sm text-slate-500 font-medium mt-1">Select your preferred method</p>
+                  <h2 className="text-2xl font-black text-slate-900 tracking-tight">Choose Your Donation Method</h2>
+                  <p className="text-sm text-slate-500 font-medium mt-1">Select your preferred method below</p>
                </div>
                {methods.map((m) => (
                 <button
@@ -160,10 +199,9 @@ export default function DonatePage() {
                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-2xl shadow-sm">🏦</div>
                        <div>
                          <h3 className="text-xl font-black text-slate-900 tracking-tight">Local Bank Transfer</h3>
-                         <p className="text-xs text-slate-400 font-medium">For transfers within Myanmar</p>
+                         <p className="text-xs text-slate-400 font-medium">Use the bank details below for transfers within Myanmar.</p>
                        </div>
                     </div>
-                    <span className="badge-modern bg-blue-50 text-blue-700">Recommended</span>
                   </div>
                   
                   <div className="space-y-1">
@@ -180,10 +218,10 @@ export default function DonatePage() {
                     ))}
                   </div>
                   
-                  <div className="mt-8 rounded-2xl border border-amber-200 bg-amber-50/50 p-5 flex items-start gap-4">
+                  <div className="mt-8 rounded-2xl border border-amber-200 bg-amber-50 p-5 flex items-start gap-4">
                     <span className="text-xl">⚠️</span>
                     <p className="text-[13px] text-amber-800 font-medium leading-relaxed">
-                      Please include <strong className="font-black">DONATION-TM</strong> as the payment reference to ensure we can acknowledge your gift and generate a receipt.
+                      <strong className="font-black text-amber-900">Important:</strong> Use reference <strong className="font-black px-1.5 py-0.5 bg-amber-200/50 rounded text-amber-900">DONATION-TM</strong> to ensure we can acknowledge your gift and generate a receipt.
                     </p>
                   </div>
                 </div>
@@ -224,77 +262,74 @@ export default function DonatePage() {
                 </div>
               )}
 
-              {/* Digital Payments */}
+              {/* Digital & Stripe etc */}
               {activeMethod === "digital" && (
                 <div className="card-modern bg-white p-8 border-slate-200 shadow-xl shadow-slate-200/40 animate-fade-in">
                   <div className="mb-8 flex items-center justify-between border-b border-slate-100 pb-6">
                     <div className="flex items-center gap-4">
-                       <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-2xl shadow-sm">📱</div>
+                       <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-2xl shadow-sm">💳</div>
                        <div>
-                         <h3 className="text-xl font-black text-slate-900 tracking-tight">Digital Ecosystem</h3>
-                         <p className="text-xs text-slate-400 font-medium">Instant verification available</p>
+                         <h3 className="text-xl font-black text-slate-900 tracking-tight">Credit Card & Digital</h3>
+                         <p className="text-xs text-slate-400 font-medium">Securely done via Stripe & GoFundMe</p>
                        </div>
                     </div>
+                    <span className="text-[10px] font-black text-green-600 bg-green-50 px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1.5"><span className="h-1.5 w-1.5 bg-green-500 rounded-full animate-pulse" /> Secure</span>
                   </div>
                   
-                  <div className="grid gap-4">
-                    {/* PayPal */}
-                    <div className="p-6 rounded-2xl bg-slate-50 border border-slate-100 group hover:bg-white hover:shadow-md transition-all">
-                      <div className="mb-4 flex items-center justify-between">
-                         <div className="flex items-center gap-2">
-                           <span className="h-8 w-8 flex items-center justify-center rounded-lg bg-white shadow-sm text-lg">🅿️</span>
-                           <span className="font-black text-slate-900 text-[14px] uppercase tracking-tight">PayPal Global</span>
-                         </div>
-                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Instant</span>
-                      </div>
-                      <div className="flex items-center justify-between bg-white px-4 py-2 rounded-xl border border-slate-100">
-                        <span className="font-mono text-[13px] text-slate-600">donate@togethermyanmar.org</span>
-                        <CopyButton value="donate@togethermyanmar.org" label="PayPal" />
-                      </div>
-                    </div>
-
-                    {/* Wave Money */}
-                    <div className="p-6 rounded-2xl bg-slate-50 border border-slate-100 group hover:bg-white hover:shadow-md transition-all">
-                      <div className="mb-4 flex items-center justify-between">
-                         <div className="flex items-center gap-2">
-                           <span className="h-8 w-8 flex items-center justify-center rounded-lg bg-white shadow-sm text-lg">🌊</span>
-                           <span className="font-black text-slate-900 text-[14px] uppercase tracking-tight">Wave Money</span>
-                         </div>
-                      </div>
-                      <div className="flex items-center justify-between bg-white px-4 py-2 rounded-xl border border-slate-100 mb-2">
-                        <span className="font-mono text-[13px] text-slate-600">09 7654 3210 0</span>
-                        <CopyButton value="09765432100" label="Wave number" />
-                      </div>
-                      <p className="text-[11px] font-medium text-slate-400 ml-1 italic text-center">Together Myanmar Foundation</p>
-                    </div>
-
-                    {/* KBZ Pay */}
-                    <div className="p-6 rounded-2xl bg-slate-50 border border-slate-100 group hover:bg-white hover:shadow-md transition-all">
-                      <div className="mb-4 flex items-center justify-between">
-                         <div className="flex items-center gap-2">
-                           <span className="h-8 w-8 flex items-center justify-center rounded-lg bg-white shadow-sm text-lg">💳</span>
-                           <span className="font-black text-slate-900 text-[14px] uppercase tracking-tight">KBZ Pay</span>
-                         </div>
-                      </div>
-                      <div className="flex items-center justify-between bg-white px-4 py-2 rounded-xl border border-slate-100 mb-2">
-                        <span className="font-mono text-[13px] text-slate-600">09 4500 7788 12</span>
-                        <CopyButton value="094500778812" label="KPay number" />
-                      </div>
-                      <p className="text-[11px] font-medium text-slate-400 ml-1 italic text-center">Together Myanmar Foundation</p>
-                    </div>
+                  <div className="grid sm:grid-cols-2 gap-4 h-full">
+                     <button className="flex flex-col items-center justify-center gap-4 p-8 rounded-2xl border-2 border-slate-100 bg-slate-50 hover:border-primary-300 hover:bg-white transition-all group">
+                        <div className="text-4xl group-hover:scale-110 transition-transform">💳</div>
+                        <div className="text-center">
+                           <p className="font-black text-slate-900">Donate via Stripe</p>
+                           <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">Apple Pay / Google Pay</p>
+                        </div>
+                     </button>
+                     <button className="flex flex-col items-center justify-center gap-4 p-8 rounded-2xl border-2 border-slate-100 bg-slate-50 hover:border-emerald-300 hover:bg-white transition-all group">
+                        <div className="text-4xl group-hover:scale-110 transition-transform">🌟</div>
+                        <div className="text-center">
+                           <p className="font-black text-slate-900">GoFundMe Campaign</p>
+                           <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">Global Campaign</p>
+                        </div>
+                     </button>
+                     <button className="flex flex-col items-center justify-center gap-4 p-8 rounded-2xl border-2 border-slate-100 bg-slate-50 hover:border-amber-300 hover:bg-white transition-all group sm:col-span-2">
+                        <div className="text-4xl group-hover:scale-110 transition-transform">₿</div>
+                        <div className="text-center">
+                           <p className="font-black text-slate-900">Cryptocurrency</p>
+                           <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">USDT / BTC / ETH</p>
+                        </div>
+                     </button>
                   </div>
+                  
+                  <p className="text-center text-xs font-bold text-slate-400 mt-8">
+                     🔐 All donations are handled securely. Personal information is never shared with third parties.
+                  </p>
                 </div>
               )}
             </main>
           </div>
 
-          {/* Post-Donation Protocol */}
+          <div className="p-8 text-center bg-emerald-50 border border-emerald-100 rounded-3xl mt-12">
+             <h3 className="text-2xl font-black text-emerald-900 mb-2">Thank you!</h3>
+             <p className="text-emerald-800 font-medium">Thank you for helping build a stronger global Myanmar community.</p>
+          </div>
+
+          {/* Transparency Section */}
+          <div className="card-modern bg-white p-8 border-slate-200 shadow-sm mt-12 grid md:grid-cols-3 gap-8 items-center border-l-4 border-l-primary-500">
+             <div className="md:col-span-1">
+                <h3 className="text-xl font-black tracking-tight mb-2 text-slate-900">Transparency Promise</h3>
+             </div>
+             <div className="md:col-span-2">
+                <p className="text-slate-600 font-medium leading-relaxed">
+                   Together Myanmar is committed to responsible use of donations. Funds support platform development, community safety, and diaspora collaboration initiatives. Supporters receive updates on how donations help expand the platform and support the community.
+                </p>
+             </div>
+          </div>
           <div className="card-modern bg-slate-900 p-8 border-none relative overflow-hidden text-white">
             <div className="absolute inset-0 bg-pattern opacity-[0.03]" />
             <div className="relative flex flex-col md:flex-row gap-8 items-center">
                <div className="h-20 w-20 shrink-0 flex items-center justify-center rounded-3xl bg-primary-600 text-3xl shadow-2xl">🙏</div>
                <div>
-                  <h3 className="text-xl font-black tracking-tight mb-2">Acknowledgement Protocol</h3>
+                  <h3 className="text-xl font-black tracking-tight mb-2">Acknowledgement</h3>
                   <p className="text-slate-400 text-[14px] font-medium leading-relaxed mb-4">
                      After performing a transaction, please dispatch an email to <a href="mailto:donate@togethermyanmar.org" className="text-primary-400 font-bold hover:underline">donate@togethermyanmar.org</a> with your transaction reference. 
                   </p>

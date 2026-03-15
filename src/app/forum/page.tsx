@@ -82,12 +82,13 @@ const Guidelines = () => (
       <div className="h-2 w-2 rounded-full bg-primary-600" />
       <h3 className="text-sm font-bold text-primary-900 uppercase tracking-wider">Community Guidelines</h3>
     </div>
-    <ul className="space-y-3">
+    <ul className="space-y-3 mb-6">
       {[
         "Be respectful and kind",
         "No hate speech or harassment",
-        "Report harmful content",
         "Stay on topic",
+        "Protect community safety",
+        "Report harmful or misleading content",
       ].map((rule) => (
         <li key={rule} className="flex items-start gap-3 text-sm text-primary-800/80 font-medium leading-tight">
           <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary-400" />
@@ -95,8 +96,31 @@ const Guidelines = () => (
         </li>
       ))}
     </ul>
+    <div className="pt-4 border-t border-primary-200/50">
+      <p className="text-xs font-bold text-primary-700 leading-relaxed italic">
+        🛡️ Discussions are moderated to ensure a safe and respectful community environment.
+      </p>
+    </div>
   </div>
 );
+
+const DEFAULT_CATEGORIES: ForumCategory[] = [
+  { id: 991, name_en: "General Discussion", name_my: "", name_th: "", name_ms: "", description_en: "General community talk.", slug: "general", display_order: 1, is_active: true, thread_count: 0, latest_activity_at: null, latest_thread_title: null, created_at: "", updated_at: "" },
+  { id: 992, name_en: "Community Announcements", name_my: "", name_th: "", name_ms: "", description_en: "Important updates.", slug: "announcements", display_order: 2, is_active: true, thread_count: 0, latest_activity_at: null, latest_thread_title: null, created_at: "", updated_at: "" },
+  { id: 993, name_en: "Human Rights & Advocacy", name_my: "", name_th: "", name_ms: "", description_en: "Advocacy efforts.", slug: "advocacy", display_order: 3, is_active: true, thread_count: 0, latest_activity_at: null, latest_thread_title: null, created_at: "", updated_at: "" },
+  { id: 994, name_en: "Education & Opportunities", name_my: "", name_th: "", name_ms: "", description_en: "Scholarships and learning.", slug: "education", display_order: 4, is_active: true, thread_count: 0, latest_activity_at: null, latest_thread_title: null, created_at: "", updated_at: "" },
+  { id: 995, name_en: "Events & Networking", name_my: "", name_th: "", name_ms: "", description_en: "Connect with others.", slug: "events", display_order: 5, is_active: true, thread_count: 0, latest_activity_at: null, latest_thread_title: null, created_at: "", updated_at: "" },
+  { id: 996, name_en: "Culture & Identity", name_my: "", name_th: "", name_ms: "", description_en: "Share our heritage.", slug: "culture", display_order: 6, is_active: true, thread_count: 0, latest_activity_at: null, latest_thread_title: null, created_at: "", updated_at: "" },
+];
+
+const CAT_ICONS: Record<string, string> = {
+  "General Discussion": "💬",
+  "Community Announcements": "📢",
+  "Human Rights & Advocacy": "⚖️",
+  "Education & Opportunities": "🎓",
+  "Events & Networking": "🤝",
+  "Culture & Identity": "🎭",
+};
 
 export default function ForumPage() {
   const router = useRouter();
@@ -110,6 +134,7 @@ export default function ForumPage() {
   const [newReplyBody, setNewReplyBody] = useState("");
   const [posting, setPosting] = useState(false);
   const [msg, setMsg] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [reportReason, setReportReason] = useState("");
   const [reportTarget, setReportTarget] = useState<{ thread_id?: string; reply_id?: string } | null>(null);
   const [token, setToken] = useState<string | null>(null);
@@ -121,8 +146,12 @@ export default function ForumPage() {
   useEffect(() => {
     setLoading(true);
     getForumCategories()
-      .then(setCategories)
-      .catch(() => {})
+      .then(cats => {
+        setCategories(cats.length > 0 ? cats : DEFAULT_CATEGORIES);
+      })
+      .catch(() => {
+        setCategories(DEFAULT_CATEGORIES);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -200,20 +229,49 @@ export default function ForumPage() {
           />
         )}
 
-        <header className="pt-20 pb-16 border-b border-slate-100 relative overflow-hidden">
+        <header className="pt-20 pb-16 border-b border-slate-100 relative overflow-hidden bg-slate-50">
           <div className="absolute inset-0 bg-pattern opacity-[0.03] pointer-events-none" />
-          <div className="mx-auto max-w-7xl px-6 relative z-10">
-            <span className="badge-primary mb-4 py-1 px-3">
-               Modern Governance & Debate
-            </span>
-            <h1 className="hero-title mb-4">
-              Community Forum
-            </h1>
-            <p className="text-lg text-slate-500 max-w-2xl leading-relaxed">
-              Verified spaces for connection, resource sharing, and respectful discussion within the Myanmar diaspora.
-            </p>
+          <div className="mx-auto max-w-7xl px-6 relative z-10 flex flex-col md:flex-row md:items-end md:justify-between gap-8">
+            <div className="flex-1">
+              <span className="badge-primary mb-4 py-1 px-3 inline-block">
+                 Diaspora Discussion Forum
+              </span>
+              <h1 className="hero-title mb-4">
+                Myanmar Community Forum
+              </h1>
+              <p className="text-lg text-slate-600 max-w-2xl leading-relaxed mb-4">
+                The Together Myanmar Community Forum is a space for members of the global Myanmar diaspora to connect, share resources, and discuss important issues.
+              </p>
+              <p className="text-[14px] font-bold text-slate-500 max-w-2xl leading-relaxed flex items-center gap-2">
+                 <span className="text-primary-500">🤝</span> The forum helps members of the Myanmar diaspora exchange ideas, share resources, and support each other.
+              </p>
+            </div>
           </div>
         </header>
+
+        {/* Search Bar */}
+        <section className="bg-white sticky top-[64px] z-20 border-b border-slate-100 shadow-sm px-6 py-4">
+          <div className="mx-auto max-w-7xl flex flex-col md:flex-row gap-4 items-center">
+            <div className="relative w-full md:max-w-md">
+               <span className="absolute left-4 top-1/2 -translate-y-1/2 opacity-30">🔍</span>
+               <input
+                 type="text"
+                 placeholder="Search discussions..."
+                 value={searchQuery}
+                 onChange={(e) => setSearchQuery(e.target.value)}
+                 className="input-modern pl-11 h-11 py-1 w-full border-slate-200 focus:border-primary-300"
+               />
+            </div>
+            {token && (
+              <button onClick={() => {
+                const firstCat = categories[0];
+                if (firstCat) openCategory(firstCat);
+              }} className="btn-primary w-full md:w-auto h-11 ml-auto">
+                + Start a Discussion
+              </button>
+            )}
+          </div>
+        </section>
 
         <section className="bg-slate-50 px-6 py-16">
           <div className="mx-auto max-w-7xl grid gap-8 lg:grid-cols-3">
@@ -226,59 +284,82 @@ export default function ForumPage() {
                   ))}
                 </div>
               ) : categories.length === 0 ? (
-                <div className="card-modern py-20 bg-white border-dashed border-slate-200 text-center">
-                  <div className="text-4xl mb-4 opacity-50">💬</div>
-                  <p className="text-slate-500 font-medium">No community categories available yet.</p>
+                <div className="card-modern py-24 bg-white border-slate-200 text-center shadow-sm">
+                  <div className="text-5xl mb-6">💬</div>
+                  <p className="text-2xl font-black text-slate-900 mb-2 tracking-tight">Discussion categories will appear here soon.</p>
+                  <p className="text-slate-500 font-medium text-lg max-w-md mx-auto">Help build the community by starting the first conversation.</p>
                 </div>
               ) : (
                 <div className="grid gap-4">
-                  {categories.map((cat, i) => (
-                    <button
-                      key={cat.id}
-                      onClick={() => openCategory(cat)}
-                      className="card-modern p-6 bg-white border-slate-200 shadow-sm group text-left transition-all hover:border-primary-300 hover:shadow-md"
-                    >
-                      <div className="flex items-start gap-4">
-                        <div className={`h-12 w-12 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-sm ${avatarBg(cat.name_en)}`}>
-                          {cat.name_en.charAt(0)}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between gap-4 mb-1">
-                            <h3 className="text-lg font-bold text-slate-900 group-hover:text-primary-600 transition-colors">
-                              {cat.name_en}
-                            </h3>
-                            <span className="text-[11px] font-bold text-slate-400 uppercase italic tracking-wider">{cat.name_my}</span>
+                  {categories.map((cat, i) => {
+                    const icon = CAT_ICONS[cat.name_en] || "💬";
+                    return (
+                      <button
+                        key={cat.id}
+                        onClick={() => openCategory(cat)}
+                        className="card-modern p-6 bg-white border-slate-200 shadow-sm group text-left transition-all hover:border-primary-300 hover:shadow-md"
+                      >
+                        <div className="flex items-start gap-4">
+                          <div className={`h-12 w-12 rounded-xl flex items-center justify-center text-white font-bold text-2xl shadow-sm ${avatarBg(cat.name_en)}`}>
+                            {icon}
                           </div>
-                          <p className="text-sm text-slate-500 leading-relaxed font-medium line-clamp-2">
-                             {cat.description_en || "Join this space for moderated discussions."}
-                          </p>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between gap-4 mb-1">
+                              <h3 className="text-lg font-bold text-slate-900 group-hover:text-primary-600 transition-colors">
+                                {cat.name_en}
+                              </h3>
+                              <span className="text-[11px] font-bold text-slate-400 uppercase italic tracking-wider">{cat.name_my}</span>
+                            </div>
+                            <p className="text-sm text-slate-500 leading-relaxed font-medium line-clamp-2">
+                               {cat.description_en || "Join this space for moderated discussions."}
+                            </p>
+                          </div>
+                          <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-primary-50 transition-colors">
+                             <svg className="h-4 w-4 text-slate-400 group-hover:text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                             </svg>
+                          </div>
                         </div>
-                        <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-primary-50 transition-colors">
-                           <svg className="h-4 w-4 text-slate-400 group-hover:text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                           </svg>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
+                      </button>
+                    )
+                  })}
                 </div>
               )}
             </div>
 
             <div className="space-y-6">
-              <div className="card-modern p-8 bg-white border-slate-200 shadow-sm">
+              <div className="card-modern p-8 bg-white border-slate-200 shadow-sm mb-6">
                 <h3 className="text-base font-bold text-slate-900 mb-4">Start Participating</h3>
                 <p className="text-sm text-slate-500 leading-relaxed mb-8">
-                  Choose a category to browse existing threads or start your own discussion.
+                  Browse discussion categories or create a new topic to start a conversation with the community. Only registered members can create discussions.
                 </p>
-                {!token && (
+                {!token ? (
                   <button
                     onClick={() => router.push("/login?next=/forum")}
                     className="btn-primary w-full justify-center"
                   >
                     Post an Update
                   </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      const firstCat = categories[0];
+                      if (firstCat) openCategory(firstCat);
+                    }}
+                    className="btn-primary w-full justify-center"
+                  >
+                    Start a Discussion
+                  </button>
                 )}
+              </div>
+              
+              {/* Popular Topics UI Mock */}
+              <div className="card-modern p-6 bg-white border-slate-200 shadow-sm flex flex-col gap-4">
+                 <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">🔥 Popular Topics</h3>
+                 <div className="text-[13px] font-medium text-slate-500 space-y-3">
+                    <p className="cursor-pointer hover:text-primary-600">Networking in Bangkok <span className="text-slate-300 text-[11px] float-right">24 replies</span></p>
+                    <p className="cursor-pointer hover:text-primary-600">Advice for Students <span className="text-slate-300 text-[11px] float-right">18 replies</span></p>
+                 </div>
               </div>
               <Guidelines />
             </div>
@@ -380,13 +461,14 @@ export default function ForumPage() {
               )}
 
               {/* Start new thread form redesign */}
-              {token && (
+              {token ? (
                 <div className="card-modern p-8 bg-white border-slate-200 shadow-sm mt-12">
-                   <h3 className="text-xl font-bold text-slate-900 mb-6">Create New Discussion</h3>
+                   <h3 className="text-xl font-black text-slate-900 mb-2">Create New Discussion</h3>
+                   <p className="text-sm font-medium text-slate-500 mb-6">Share your ideas, questions, or community updates.</p>
                    {msg && <p className="p-3 bg-red-50 text-red-600 rounded-lg mb-4 text-sm font-bold">{msg}</p>}
                    <form onSubmit={(e) => handleCreateThread(e, cat.id)} className="space-y-4">
                       <input
-                        className="input-modern"
+                        className="input-modern bg-slate-50 border-slate-200 focus:border-primary-300"
                         placeholder="Discussion title..."
                         value={newThreadTitle}
                         onChange={(e) => setNewThreadTitle(e.target.value)}
@@ -394,7 +476,7 @@ export default function ForumPage() {
                         required
                       />
                       <textarea
-                        className="input-modern resize-none"
+                        className="input-modern resize-none bg-slate-50 border-slate-200 focus:border-primary-300"
                         rows={6}
                         placeholder="Share your thoughts with the community..."
                         value={newThreadBody}
@@ -403,16 +485,28 @@ export default function ForumPage() {
                         maxLength={10000}
                         required
                       />
-                      <div className="flex items-center justify-end">
+                      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-2">
+                         <div className="flex flex-wrap items-center gap-2">
+                           {["advocacy", "education", "culture", "community support"].map(tag => (
+                             <span key={tag} className="badge-modern bg-slate-100 text-slate-500 border-none capitalize text-[10px] cursor-pointer hover:bg-slate-200">
+                               #{tag}
+                             </span>
+                           ))}
+                         </div>
                          <button
                            type="submit"
                            disabled={posting}
-                           className="btn-primary"
+                           className="btn-primary w-full sm:w-auto justify-center"
                          >
-                           {posting ? "..." : "Launch Thread"}
+                           {posting ? "..." : "Start Discussion"}
                          </button>
                       </div>
                    </form>
+                </div>
+              ) : (
+                <div className="card-modern p-8 bg-white border-slate-200 shadow-sm mt-12 text-center">
+                   <p className="text-slate-500 font-medium mb-4">Only registered members can create discussions.</p>
+                   <button onClick={() => router.push("/login?next=/forum")} className="btn-primary">Authenticate Account</button>
                 </div>
               )}
             </div>

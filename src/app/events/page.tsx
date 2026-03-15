@@ -272,64 +272,104 @@ export default function EventsPage() {
       )}
 
       {/* Hero */}
-      <header className="pt-20 pb-16 border-b border-slate-100 relative overflow-hidden">
+      <header className="pt-20 pb-16 border-b border-slate-100 relative overflow-hidden bg-slate-50">
         <div className="absolute inset-0 bg-pattern opacity-[0.03] pointer-events-none" />
-        <div className="mx-auto max-w-7xl px-6 relative z-10 flex flex-col md:flex-row md:items-end md:justify-between gap-8">
-          <div>
-            <span className="badge-primary mb-4 py-1 px-3">
-               Verified Community Calendar
-            </span>
-            <h1 className="hero-title mb-4">Upcoming Events</h1>
-            <p className="text-lg text-slate-500 max-w-2xl leading-relaxed">
-               Connect at verified workshops, digital webinars, and community gatherings designed for the global Myanmar network.
+        <div className="mx-auto max-w-7xl px-6 relative z-10 flex flex-col items-center text-center">
+          <span className="badge-primary mb-4 py-1 px-3 inline-block">
+             Global Myanmar Events
+          </span>
+          <h1 className="hero-title mb-4">Community Events Calendar</h1>
+          <p className="text-lg text-slate-600 max-w-3xl leading-relaxed mb-6">
+             The Together Myanmar Community Calendar highlights workshops, webinars, cultural gatherings, and community events across the global Myanmar network.
+          </p>
+          <p className="text-sm font-bold text-slate-500 mb-8 flex items-center gap-2">
+            <span className="text-primary-500 text-lg">🤝</span> This calendar connects Myanmar communities worldwide through shared events and collaboration.
+          </p>
+
+          {isLoggedIn ? (
+            <div className="flex flex-col items-center">
+              <button
+                onClick={() => setShowSubmitModal(true)}
+                className="btn-primary shadow-xl shadow-primary-500/20 py-4 px-10 text-[15px]"
+              >
+                + Propose an Event
+              </button>
+              <p className="text-xs font-medium text-slate-400 mt-3 text-center max-w-md leading-relaxed italic">
+                Community members can submit events related to education, advocacy, culture, or networking. Event organizers should ensure compliance with local laws and safety guidelines.
+              </p>
+            </div>
+          ) : (
+            <p className="text-sm font-bold text-slate-400 bg-white border border-slate-200 px-6 py-3 rounded-full shadow-sm">
+              Log in to submit community events.
             </p>
-          </div>
-          {isLoggedIn && (
-            <button
-              onClick={() => setShowSubmitModal(true)}
-              className="btn-primary shadow-xl shadow-primary-500/20 py-3 px-8"
-            >
-              + PROPOSE AN EVENT
-            </button>
           )}
         </div>
       </header>
 
       {/* Filter bar */}
-      <section className="bg-slate-50/50 sticky top-[64px] z-20 border-b border-slate-100 backdrop-blur-sm px-6 py-4">
-        <div className="mx-auto flex max-w-7xl gap-3">
-          {(["upcoming", "past", "all"] as const).map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`rounded-full px-5 py-2 text-[12px] font-black uppercase tracking-widest transition-all ${
-                 filter === f 
-                  ? "bg-slate-900 text-white shadow-lg" 
-                  : "bg-white text-slate-500 border border-slate-200 hover:border-slate-300 hover:text-slate-900"
-              }`}
-            >
-              {f === "all" ? "Whole Catalog" : f === "upcoming" ? "Future Sessions" : "Past Events"}
-            </button>
-          ))}
+      <section className="bg-white sticky top-[64px] z-20 border-b border-slate-100 px-6 py-4 shadow-sm">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap gap-2">
+            {(["upcoming", "past", "all"] as const).map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`rounded-full px-5 py-2 text-[12px] font-black uppercase tracking-widest transition-all ${
+                   filter === f 
+                    ? "bg-primary-600 text-white shadow-md shadow-primary-200" 
+                    : "bg-slate-50 text-slate-500 border border-slate-200 hover:border-slate-300 hover:text-slate-900"
+                }`}
+              >
+                {f === "all" ? "All Events" : f === "upcoming" ? "Future Sessions" : "Past Events Archive"}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-4 border-l border-slate-200 pl-4">
+             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Format Filters:</span>
+             <select className="input-modern bg-slate-50 border-slate-100 py-1.5 px-3 text-xs w-32">
+               <option value="">All Formats</option>
+               <option value="online">🎥 Online</option>
+               <option value="in_person">👥 In-person</option>
+               <option value="hybrid">🔀 Hybrid</option>
+             </select>
+             <select className="input-modern bg-slate-50 border-slate-100 py-1.5 px-3 text-xs w-32">
+               <option value="">Global</option>
+               <option value="asia">Asia</option>
+               <option value="europe">Europe</option>
+               <option value="na">North America</option>
+               <option value="aus">Australia</option>
+             </select>
+          </div>
         </div>
       </section>
 
       {/* Events grid */}
       <section className="bg-slate-50 px-6 py-16">
         <div className="mx-auto max-w-7xl">
+          
+          <div className="flex items-center justify-between mb-8 pb-4 border-b border-slate-200">
+             <h2 className="text-[13px] font-black text-slate-800 uppercase tracking-widest px-2">
+               {filter === "past" ? "Archive of Completed Events" : "Upcoming Featured Events"}
+             </h2>
+             <div className="flex bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm">
+                <button className="px-4 py-1.5 bg-slate-100 text-slate-900 text-xs font-bold flex items-center gap-2 border-r border-slate-200">📅 Calendar View</button>
+                <button className="px-4 py-1.5 text-slate-500 hover:bg-slate-50 text-xs font-bold flex items-center gap-2">📋 List View</button>
+             </div>
+          </div>
           {loading ? (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                {[1, 2, 3].map(i => <div key={i} className="h-64 animate-pulse bg-white border border-slate-100 rounded-2xl" />)}
             </div>
           ) : filtered.length === 0 ? (
-            <div className="card-modern py-32 bg-white border-dashed border-slate-200 text-center">
-              <div className="text-5xl mb-6 opacity-20">📅</div>
-              <p className="text-xl font-bold text-slate-900 mb-2">No results matching filter</p>
-              <p className="text-slate-500 font-medium mb-8">
-                Try shifting your timeframe or clear the catalog filters.
+            <div className="card-modern py-32 bg-white border-dashed border-slate-200 text-center shadow-sm">
+              <div className="text-6xl mb-6">📅</div>
+              <p className="text-2xl font-black text-slate-900 mb-3 tracking-tight">No upcoming events yet.</p>
+              <p className="text-slate-500 font-medium text-lg mb-8 max-w-md mx-auto">
+                Be the first to share an event with the community. Workshops, webinars, and cultural gatherings are welcome.
               </p>
               {filter !== "all" && (
-                <button onClick={() => setFilter("all")} className="btn-secondary">Global Catalog</button>
+                <button onClick={() => setFilter("all")} className="btn-secondary">View All Events</button>
               )}
             </div>
           ) : (
