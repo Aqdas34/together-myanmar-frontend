@@ -270,15 +270,15 @@ export default function ResourcesPage() {
               </select>
             </div>
 
-            <div className="card-modern p-8 bg-primary-900 text-white border-none shadow-xl shadow-primary-100 relative overflow-hidden">
-               <div className="absolute -right-6 -top-6 text-7xl opacity-10">🤝</div>
-               <h3 className="text-xl font-black mb-3 tracking-tight leading-snug relative z-10">Help Expand the Resource Hub</h3>
-               <p className="text-primary-100 text-sm font-medium mb-8 leading-relaxed relative z-10">
+            <div className="card-modern p-8 bg-gradient-to-br from-primary-900 to-primary-800 text-white border-none shadow-xl shadow-primary-200 relative overflow-hidden">
+               <div className="absolute -right-6 -top-6 text-7xl opacity-10 rotate-12">🤝</div>
+               <h3 className="text-xl font-black mb-3 tracking-tight leading-snug relative z-10 text-white">Help Expand the Resource Hub</h3>
+               <p className="text-primary-100 text-[13px] font-medium mb-8 leading-relaxed relative z-10">
                  This directory grows through community contributions. Share trusted resources to support Myanmar communities worldwide.
                </p>
                <Link
                 href="/resources/submit"
-                className="btn-primary bg-white text-primary-900 hover:bg-primary-50 hover:scale-105 transition-transform justify-center w-full py-4 text-sm relative z-10 shadow-lg"
+                className="btn-primary bg-white text-primary-900 border-none hover:bg-primary-50 hover:scale-[1.02] transition-all justify-center w-full py-3.5 text-sm font-bold relative z-10 shadow-lg"
               >
                 Submit a Resource
               </Link>

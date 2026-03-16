@@ -362,9 +362,9 @@ function NewsPageInner() {
               <Link href="/contact" className="btn-secondary w-full justify-center bg-white">Submit Your Story</Link>
            </div>
            
-           <div className="card-modern bg-primary-900 border-none p-8 shadow-xl shadow-primary-200 text-white relative overflow-hidden">
-              <div className="absolute -right-4 -top-4 text-8xl opacity-10">✉️</div>
-              <h2 className="text-xl font-black mb-3 relative z-10">Subscribe to Updates</h2>
+            <div className="card-modern bg-gradient-to-br from-primary-900 to-primary-800 border-none p-8 shadow-xl shadow-primary-200 text-white relative overflow-hidden">
+               <div className="absolute -right-4 -top-4 text-8xl opacity-10 rotate-12">✉️</div>
+               <h2 className="text-xl font-black mb-3 relative z-10 text-white">Subscribe to Updates</h2>
               <p className="text-primary-100 font-medium text-[15px] leading-relaxed mb-6 relative z-10">
                 Receive the best community news, event updates, and stories right in your inbox. No spam.
               </p>

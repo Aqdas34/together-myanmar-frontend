@@ -81,7 +81,7 @@ export default function DonatePage() {
             <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 text-3xl shadow-2xl">
               ❤️
             </div>
-            <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-6 leading-tight">
+            <h1 className="text-4xl md:text-6xl font-black tracking-tight mb-6 leading-tight text-white">
               Support Our <span className="text-primary-400">Mission</span>
             </h1>
             <p className="text-lg text-primary-100 mb-10 leading-relaxed font-medium">
@@ -147,7 +147,7 @@ export default function DonatePage() {
             <div className="absolute right-0 bottom-0 text-9xl opacity-5">🔄</div>
             <div className="relative z-10 grid md:grid-cols-2 gap-8 items-center">
               <div>
-                <h3 className="text-2xl font-black mb-3">Become a Monthly Supporter</h3>
+                <h3 className="text-2xl font-black mb-3 text-white">Become a Monthly Supporter</h3>
                 <p className="text-slate-300 font-medium leading-relaxed mb-6">
                   Recurring support helps keep the platform sustainable and allows us to plan for the future.
                 </p>
@@ -329,7 +329,7 @@ export default function DonatePage() {
             <div className="relative flex flex-col md:flex-row gap-8 items-center">
                <div className="h-20 w-20 shrink-0 flex items-center justify-center rounded-3xl bg-primary-600 text-3xl shadow-2xl">🙏</div>
                <div>
-                  <h3 className="text-xl font-black tracking-tight mb-2">Acknowledgement</h3>
+                  <h3 className="text-xl font-black tracking-tight mb-2 text-white">Acknowledgement</h3>
                   <p className="text-slate-400 text-[14px] font-medium leading-relaxed mb-4">
                      After performing a transaction, please dispatch an email to <a href="mailto:donate@togethermyanmar.org" className="text-primary-400 font-bold hover:underline">donate@togethermyanmar.org</a> with your transaction reference. 
                   </p>
