@@ -416,6 +416,7 @@ export interface UserProfile {
   city: string | null;
   bio: string | null;
   country_id: number | null;
+  preferred_language: string | null;
   avatar_url: string | null;
   show_in_diaspora_directory: boolean;
   privacy_allow_connection_requests: boolean;
@@ -428,6 +429,7 @@ export interface UserProfilePayload {
   city?: string;
   bio?: string;
   country_id?: number;
+  preferred_language?: string;
   show_in_diaspora_directory?: boolean;
   privacy_allow_connection_requests?: boolean;
 }

@@ -142,7 +142,7 @@ export default function ResourcesPage() {
               <button onClick={() => setSearch("")} className="ml-3 text-slate-300 hover:text-slate-500 transition-colors">✕</button>
             )}
           </div>
-          <p className="text-xs text-slate-500 font-medium mt-3 ml-2 italic text-center md:text-left">Search by keyword, organization name, or location.</p>
+          <p className="text-[14px] text-slate-500 font-medium mt-3 ml-2 text-center md:text-left">Search by keyword, organization name, or location.</p>
         </div>
       </header>
 

@@ -1,6 +1,7 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useCallback, useRef, FormEvent, Suspense } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   getMe,
@@ -22,7 +23,7 @@ import {
   type UserProfile,
   type FamilyRelationship,
   type Country,
-} from "@/lib/api"
+} from "@/lib/api";
 
 type Tab = "profile" | "family" | "privacy" | "security";
 
@@ -34,7 +35,7 @@ const RELATIONSHIP_LABELS = [
 
 export default function UserProfilePage() {
   return (
-    <Suspense>
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center"><div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" /></div>}>
       <UserProfileInner />
     </Suspense>
   );
@@ -58,6 +59,7 @@ function UserProfileInner() {
   const [city, setCity] = useState("");
   const [bio, setBio] = useState("");
   const [countryId, setCountryId] = useState<number | "">("");
+  const [preferredLanguage, setPreferredLanguage] = useState("en");
   const [showInDirectory, setShowInDirectory] = useState(false);
   const [allowRequests, setAllowRequests] = useState(true);
   const [profileSaving, setProfileSaving] = useState(false);
@@ -101,24 +103,42 @@ function UserProfileInner() {
       const [user, twofa] = await Promise.all([getMe(token), get2FAStatus(token)]);
       setMe(user);
       setTwoFAEnabled(twofa.enabled);
+      
       try {
         const p = await getMyProfile(token);
         setProfile(p);
-        setFullName(p.full_name);
+        setFullName(p.full_name || "");
         setCity(p.city || "");
         setBio(p.bio || "");
         setCountryId(p.country_id ?? "");
+        setPreferredLanguage(p.preferred_language || user.preferred_language || "en");
         setShowInDirectory(p.show_in_diaspora_directory);
         setAllowRequests(p.privacy_allow_connection_requests);
         if (p.avatar_url) setAvatarPreview(`http://localhost:8000${p.avatar_url}`);
-      } catch { /* profile not yet created */ }
+      } catch (err) {
+        console.log("Profile load failed, likely initial setup", err);
+      }
+      
       try {
         const c = await getCountries();
         setCountries(c);
-      } catch { /* non-fatal */ }
-      setFamily(await getFamilyRelationships(token));
-    } catch { router.replace("/login?next=/user/profile"); }
-    finally { setLoading(false); }
+      } catch (err) {
+        console.error("Country load failed", err);
+      }
+      
+      try {
+        const fam = await getFamilyRelationships(token);
+        setFamily(fam);
+      } catch (err) {
+        console.error("Family load failed", err);
+      }
+      
+    } catch (err) {
+      console.error("Critical load failure", err);
+      router.replace("/login?next=/user/profile");
+    } finally {
+      setLoading(false);
+    }
   }, [token, router]);
 
   useEffect(() => { load(); }, [load]);
@@ -134,30 +154,38 @@ function UserProfileInner() {
         city: city || undefined,
         bio: bio || undefined,
         country_id: countryId !== "" ? countryId : undefined,
+        preferred_language: preferredLanguage,
         show_in_diaspora_directory: showInDirectory,
         privacy_allow_connection_requests: allowRequests,
       });
       setProfile(p);
       setProfileMsg("Profile saved successfully.");
-    } catch (e) {
-      setProfileMsg(e instanceof ApiError ? e.message : "Save failed.");
-    } finally { setProfileSaving(false); }
+      // Optional: scroll to message
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+      setProfileMsg(err instanceof ApiError ? err.message : "Save failed.");
+    } finally {
+      setProfileSaving(false);
+    }
   }
 
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file || !token) return;
     setAvatarMsg("");
-    setAvatarPreview(URL.createObjectURL(file));
+    const localUrl = URL.createObjectURL(file);
+    setAvatarPreview(localUrl);
     setAvatarUploading(true);
     try {
       const p = await uploadAvatar(token, file);
       setProfile(p);
-      if (p.avatar_url) setAvatarPreview(`http://localhost:8000${p.avatar_url}`);
+      if (p.avatar_url) {
+        setAvatarPreview(`http://localhost:8000${p.avatar_url}`);
+      }
       setAvatarMsg("Profile picture updated.");
     } catch (err) {
       setAvatarMsg(err instanceof ApiError ? err.message : "Upload failed.");
-      setAvatarPreview(profile?.avatar_url ? `http://localhost:8000${profile.avatar_url}` : null);
+      setAvatarPreview(profile?.avatar_url ? `http://localhost:8000${profile.avatar_url}` : localUrl);
     } finally {
       setAvatarUploading(false);
       if (avatarInputRef.current) avatarInputRef.current.value = "";
@@ -179,8 +207,11 @@ function UserProfileInner() {
       setRelLinkedEmail("");
       setRelLinkedId(null);
       setRelLinkMsg("");
-    } catch { /* silent */ }
-    finally { setFamilyAdding(false); }
+    } catch (err) {
+      console.error("Add rel failed", err);
+    } finally {
+      setFamilyAdding(false);
+    }
   }
 
   async function lookupAccount() {
@@ -213,14 +244,19 @@ function UserProfileInner() {
       });
       setFamily((prev) => prev.map((r) => r.id === id ? updated : r));
       setEditingRelId(null);
-    } catch { /* silent */ }
-    finally { setEditSaving(false); }
+    } catch (err) {
+      console.error("Save edit rel failed", err);
+    } finally { setEditSaving(false); }
   }
 
   async function deleteRel(id: string) {
     if (!token) return;
-    await deleteFamilyRelationship(token, id);
-    setFamily((prev) => prev.filter((r) => r.id !== id));
+    try {
+      await deleteFamilyRelationship(token, id);
+      setFamily((prev) => prev.filter((r) => r.id !== id));
+    } catch (err) {
+      console.error("Delete rel failed", err);
+    }
   }
 
   async function handleSetup2FA() {
@@ -277,7 +313,7 @@ function UserProfileInner() {
       {/* Welcome banner */}
       {isWelcome && (
         <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 text-white">
-          <div className="mx-auto flex max-w-4xl items-center justify-between gap-4">
+          <div className="mx-auto max-w-4xl flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <span className="text-2xl">🎉</span>
               <div>
@@ -290,326 +326,159 @@ function UserProfileInner() {
         </div>
       )}
 
-      {/* Header */}
-      <section className="relative overflow-hidden px-6 py-12 text-white"><div className="absolute inset-0 hero-gradient dot-grid" />
-        <div className="relative mx-auto flex max-w-4xl items-center gap-6">
-          <div className="relative shrink-0">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white/20 text-3xl font-bold overflow-hidden ring-2 ring-white/30">
+      {/* Header Section */}
+      <section className="bg-white border-b border-slate-200 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-slate-50/50 to-white pointer-events-none" />
+        <div className="absolute top-0 right-0 p-20 opacity-[0.03] pointer-events-none">
+           <svg className="h-64 w-64" viewBox="0 0 100 100" fill="currentColor"><path d="M50 0 C22.4 0 0 22.4 0 50 C0 77.6 22.4 100 50 100 C77.6 100 100 77.6 100 50 C100 22.4 77.6 0 50 0 Z M50 90 C27.9 90 10 72.1 10 50 C10 27.9 27.9 10 50 10 C72.1 10 90 27.9 90 50 C90 72.1 72.1 90 50 90 Z" /></svg>
+        </div>
+        
+        <div className="mx-auto max-w-4xl px-6 py-14 flex flex-col md:flex-row items-center gap-12 relative z-10">
+          <div className="relative group shrink-0">
+            <div className="h-36 w-36 rounded-[2.5rem] bg-white flex items-center justify-center text-6xl font-black overflow-hidden ring-1 ring-slate-200 shadow-2xl transition-all group-hover:scale-[1.02]">
               {avatarPreview ? (
                 <img src={avatarPreview} alt="Profile" className="h-full w-full object-cover" />
               ) : (
-                <span>{fullName ? fullName.charAt(0).toUpperCase() : "U"}</span>
+                <span className="text-slate-200">{fullName ? fullName.charAt(0).toUpperCase() : "U"}</span>
               )}
             </div>
             <button
               type="button"
               onClick={() => avatarInputRef.current?.click()}
               disabled={avatarUploading}
-              title="Change profile picture"
-              className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-white text-gray-700 shadow hover:bg-gray-100 disabled:opacity-50"
+              className="absolute -bottom-1 -right-1 flex h-11 w-11 items-center justify-center rounded-2xl bg-white border border-slate-200 text-slate-600 shadow-lg hover:text-primary-600 hover:scale-110 active:scale-95 transition-all disabled:opacity-50"
             >
-              {avatarUploading ? (
-                <span className="h-3 w-3 animate-spin rounded-full border-2 border-gray-400 border-t-transparent" />
-              ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
-                  <path d="M2.695 14.763l-1.262 3.154a.5.5 0 00.65.65l3.155-1.262a4 4 0 001.343-.885L17.5 5.5a2.121 2.121 0 00-3-3L3.58 13.42a4 4 0 00-.885 1.343z" />
-                </svg>
-              )}
+              {avatarUploading ? <span className="h-5 w-5 animate-spin rounded-full border-2 border-primary-100 border-t-primary-600" /> : "📷"}
             </button>
-            <input
-              ref={avatarInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/gif,image/webp"
-              className="hidden"
-              onChange={handleAvatarChange}
-            />
+            <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
           </div>
-          <div>
-            <h1 className="text-3xl font-extrabold">{fullName || "Your Profile"}</h1>
-            <p className="text-sm" style={{ color: "#93c5fd" }}>{me?.email}</p>
-            {profile && (
-              <p className="mt-1 text-xs text-green-300">
-                {countries.find(c => c.id === profile.country_id)?.name_en}
-                {profile.city ? (profile.country_id ? ` · ${profile.city}` : profile.city) : ""}
+
+          <div className="flex-1 text-center md:text-left space-y-5">
+            <div>
+              <h1 className="text-5xl font-black text-slate-900 tracking-tight leading-tight mb-2">{fullName || "Anonymous Member"}</h1>
+              <p className="text-[18px] font-bold text-slate-500 flex items-center justify-center md:justify-start gap-2.5">
+                <span className="opacity-30">✉️</span> {me?.email}
               </p>
-            )}
-            {avatarMsg && (
-              <p className={`mt-1 text-xs font-semibold ${avatarMsg.includes("updated") ? "text-green-300" : "text-red-300"}`}>{avatarMsg}</p>
-            )}
-            <p className="mt-1 text-xs" style={{ color: "#93c5fd" }}>Click the pencil icon to change your profile picture</p>
-            {me?.id && (
-              <div className="mt-2 flex items-center gap-2">
-                <span className="text-xs font-mono" style={{ color: "#bfdbfe" }}>ID: {me.id}</span>
-                <button
-                  type="button"
-                  onClick={() => navigator.clipboard.writeText(me.id)}
-                  title="Copy User ID"
-                  className="rounded px-1.5 py-0.5 text-xs font-semibold transition-colors hover:bg-white/20"
-                  style={{ color: "#93c5fd" }}
-                >
-                  Copy
-                </button>
-              </div>
-            )}
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-4">
+              <span className="bg-white border border-slate-200 px-5 py-2.5 rounded-2xl text-[13px] font-black text-slate-700 flex items-center gap-2.5 shadow-sm">
+                <span className="text-lg">📍</span>
+                {countries.find(c => c.id === countryId)?.name_en || (profile?.country_id ? countries.find(c => c.id === profile.country_id)?.name_en : "Global Network")}
+                {(city || profile?.city) && <span className="text-slate-300 mx-1">/</span>}
+                {city || profile?.city}
+              </span>
+              {me?.id && (
+                <div className="flex items-center gap-2.5 bg-white border border-slate-200 px-5 py-2.5 rounded-2xl h-[46px] shadow-sm">
+                  <span className="text-[10px] font-black text-slate-400 tracking-[0.15em] uppercase">ID:</span>
+                  <span className="text-[13px] font-mono font-bold text-slate-900">{me.id}</span>
+                  <button type="button" onClick={() => { navigator.clipboard.writeText(me.id); setProfileMsg("Member ID copied!"); }} className="ml-2 text-slate-300 hover:text-primary-600 transition-colors">📋</button>
+                </div>
+              )}
+            </div>
+            {avatarMsg && <p className="text-[11px] font-black uppercase tracking-widest px-4 py-1 rounded-full inline-block bg-blue-50 text-blue-600">{avatarMsg}</p>}
           </div>
         </div>
       </section>
 
       <section className="bg-gray-50 px-4 py-10">
         <div className="mx-auto max-w-4xl">
-          {/* Tabs */}
           <div className="mb-8 tab-bar">
             {tabs.map((t) => (
-              <button key={t.id} onClick={() => setTab(t.id)}
-                className={`tab-item flex items-center gap-2${tab === t.id ? " tab-item-active" : ""}`}>
+              <button key={t.id} onClick={() => setTab(t.id)} className={`tab-item flex items-center gap-2${tab === t.id ? " tab-item-active" : ""}`}>
                 <span>{t.icon}</span> {t.label}
               </button>
             ))}
           </div>
 
-          {/* ── Profile ─── */}
           {tab === "profile" && (
             <form onSubmit={saveProfile} className="feature-card p-8">
               <h2 className="mb-6 text-xl font-bold text-gray-900">Account Information</h2>
-              {profileMsg && (
-                <div className={`mb-5 rounded-xl border px-4 py-3 text-sm ${profileMsg.includes("success") ? "border-green-200 bg-green-50 text-green-700" : "border-red-200 bg-red-50 text-red-700"}`}>{profileMsg}</div>
-              )}
+              {profileMsg && <div className={`mb-5 rounded-xl border px-4 py-3 text-sm ${profileMsg.includes("success") ? "border-green-200 bg-green-50 text-green-700" : "border-red-200 bg-red-50 text-red-700"}`}>{profileMsg}</div>}
               <div className="grid gap-6 md:grid-cols-2">
                 <div>
                   <label className="mb-1 block text-sm font-medium text-gray-900">Full Name <span className="text-red-500">*</span></label>
-                  <input type="text" required value={fullName} onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Your full name"
-                    className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200" />
-                  <p className="mt-1 text-xs text-gray-400">Stored hashed — not publicly searchable.</p>
+                  <input type="text" required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Your full name" className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200" />
                 </div>
                 <div>
                   <label className="mb-1 block text-sm font-medium text-gray-900">Email</label>
-                  <input type="email" disabled value={me?.email || ""} className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-500 cursor-not-allowed" />
+                  <input type="email" disabled value={me?.email || ""} className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-500" />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-900">Country / Location</label>
-                  <select value={countryId} onChange={(e) => setCountryId(e.target.value ? Number(e.target.value) : "")}
-                    className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200">
+                  <label className="mb-1 block text-sm font-medium text-gray-900">Country</label>
+                  <select value={countryId} onChange={(e) => setCountryId(e.target.value ? Number(e.target.value) : "")} className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none">
                     <option value="">— Select country —</option>
-                    {countries.map((c) => (
-                      <option key={c.id} value={c.id}>{c.name_en}</option>
-                    ))}
+                    {countries.map((c) => <option key={c.id} value={c.id}>{c.name_en}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-900">City / Region</label>
-                  <input type="text" value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g., Bangkok, Kuala Lumpur"
-                    className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200" />
+                  <label className="mb-1 block text-sm font-medium text-gray-900">City</label>
+                  <input type="text" value={city} onChange={(e) => setCity(e.target.value)} placeholder="Your city" className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none" />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-900">Preferred Language</label>
-                  <input disabled value={me?.preferred_language || "en"} className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-500 cursor-not-allowed" />
+                   <label className="mb-1 block text-sm font-medium text-gray-900">Preferred Language</label>
+                   <select value={preferredLanguage} onChange={(e) => setPreferredLanguage(e.target.value)} className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:border-blue-500">
+                     <option value="en">English</option>
+                     <option value="my">Burmese</option>
+                   </select>
                 </div>
                 <div className="md:col-span-2">
                   <label className="mb-1 block text-sm font-medium text-gray-900">Bio</label>
-                  <textarea rows={3} value={bio} onChange={(e) => setBio(e.target.value)} maxLength={500}
-                    placeholder="A short introduction (optional)"
-                    className="w-full resize-none rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200" />
-                  <p className="text-right text-xs text-gray-400">{bio.length}/500</p>
+                  <textarea rows={3} value={bio} onChange={(e) => setBio(e.target.value)} maxLength={500} className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:border-blue-500" />
                 </div>
               </div>
-              <div className="mt-6 flex gap-3 border-t border-gray-100 pt-6">
-                <button type="submit" disabled={profileSaving}
-                  className="btn-gradient disabled:opacity-50">
-                  {profileSaving ? "Saving…" : "Save Profile"}
+              <div className="mt-8">
+                <button type="submit" disabled={profileSaving} className="px-8 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-all">
+                  {profileSaving ? "Saving..." : "Save Profile Data"}
                 </button>
               </div>
             </form>
           )}
 
-          {/* ── Family ─── */}
           {tab === "family" && (
             <div className="feature-card p-8">
-              <h2 className="mb-2 text-xl font-bold text-gray-900">Family Relationships</h2>
-              <p className="mb-6 text-sm text-gray-500">Record family members to aid reconnection. Names are stored privately.</p>
-              <form onSubmit={addRelationship} className="mb-8 space-y-3">
-                <div className="grid gap-3 sm:grid-cols-3">
-                  <div>
-                    <label className="mb-1 block text-xs font-medium text-gray-700">Relationship</label>
-                    <select value={relLabel} onChange={(e) => setRelLabel(e.target.value)}
-                      className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none">
-                      {RELATIONSHIP_LABELS.map((l) => <option key={l}>{l}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="mb-1 block text-xs font-medium text-gray-700">Name (optional)</label>
-                    <input type="text" value={relName} onChange={(e) => setRelName(e.target.value)} placeholder="e.g., Ma Khin"
-                      className="w-full rounded-xl border border-gray-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:outline-none" />
-                  </div>
-                  <div className="sm:flex sm:items-end">
-                    <button type="submit" disabled={familyAdding}
-                      className="w-full rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50">
-                      {familyAdding ? "Adding…" : "+ Add"}
-                    </button>
-                  </div>
-                </div>
-                {/* Link to existing account */}
-                <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
-                  <p className="mb-2 text-xs font-medium text-gray-600">Link to a registered account (optional)</p>
-                  <p className="mb-3 text-xs text-gray-400">If this family member is on Together Myanmar, enter their exact email to link accounts.</p>
-                  <div className="flex gap-2">
-                    <input type="email" value={relLinkedEmail} onChange={(e) => { setRelLinkedEmail(e.target.value); setRelLinkedId(null); setRelLinkMsg(""); }}
-                      placeholder="their@email.com"
-                      className="flex-1 rounded-xl border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none" />
-                    <button type="button" onClick={lookupAccount} disabled={relLinkLoading || !relLinkedEmail.trim()}
-                      className="rounded-xl border border-gray-300 bg-white px-4 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-100 disabled:opacity-50">
-                      {relLinkLoading ? "…" : "Look up"}
-                    </button>
-                  </div>
-                  {relLinkMsg && (
-                    <p className={`mt-2 text-xs font-medium ${relLinkedId ? "text-emerald-600" : "text-red-500"}`}>{relLinkMsg}</p>
-                  )}
-                </div>
+              <h2 className="mb-4 text-xl font-bold text-gray-900">Family Relationships</h2>
+              <form onSubmit={addRelationship} className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <select value={relLabel} onChange={(e) => setRelLabel(e.target.value)} className="rounded-xl border border-gray-300 px-4 py-2">
+                   {RELATIONSHIP_LABELS.map(l => <option key={l}>{l}</option>)}
+                </select>
+                <input value={relName} onChange={(e) => setRelName(e.target.value)} placeholder="Member Name" className="rounded-xl border border-gray-300 px-4 py-2" />
+                <button type="submit" disabled={familyAdding} className="bg-blue-600 text-white rounded-xl py-2">Add Member</button>
               </form>
-              {family.length === 0 ? (
-                <p className="py-6 text-center text-sm text-gray-400">No family relationships added yet.</p>
-              ) : (
-                <div className="space-y-2">
-                  {family.map((rel) => (
-                    <div key={rel.id} className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3">
-                      {editingRelId === rel.id ? (
-                        <div className="flex flex-wrap items-end gap-2">
-                          <select value={editLabel} onChange={(e) => setEditLabel(e.target.value)}
-                            className="rounded-xl border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none">
-                            {RELATIONSHIP_LABELS.map((l) => <option key={l}>{l}</option>)}
-                          </select>
-                          <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="Name"
-                            className="flex-1 rounded-xl border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none" />
-                          <button onClick={() => saveEditRel(rel.id)} disabled={editSaving}
-                            className="rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white hover:bg-blue-700 disabled:opacity-50">
-                            {editSaving ? "…" : "Save"}
-                          </button>
-                          <button onClick={() => setEditingRelId(null)}
-                            className="rounded-xl border border-gray-200 px-4 py-2 text-xs font-semibold text-gray-500 hover:bg-gray-100">
-                            Cancel
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <span className="text-sm font-semibold text-gray-900">{rel.relationship_label}</span>
-                            {rel.related_name_free_text && <span className="ml-2 text-sm text-gray-500">— {rel.related_name_free_text}</span>}
-                            {rel.related_user_id && <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700">🔗 Account linked</span>}
-                          </div>
-                          <div className="flex gap-3">
-                            <button onClick={() => startEditRel(rel)} className="text-xs font-semibold text-blue-500 hover:text-blue-700">Edit</button>
-                            <button onClick={() => deleteRel(rel.id)} className="text-xs font-semibold text-red-500 hover:text-red-700">Remove</button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
+              <div className="space-y-4">
+                 {family.map(rel => (
+                   <div key={rel.id} className="flex justify-between items-center bg-white p-4 rounded-xl border">
+                     <span><strong>{rel.relationship_label}:</strong> {rel.related_name_free_text || "Unnamed"}</span>
+                     <button onClick={() => deleteRel(rel.id)} className="text-red-500">Remove</button>
+                   </div>
+                 ))}
+              </div>
             </div>
           )}
 
-          {/* ── Privacy ─── */}
           {tab === "privacy" && (
             <form onSubmit={saveProfile} className="feature-card p-8">
-              <h2 className="mb-2 text-xl font-bold text-gray-900">Privacy Settings</h2>
-              <p className="mb-6 text-sm text-gray-500">Control how others can find and contact you.</p>
-              {profileMsg && (
-                <div className={`mb-5 rounded-xl border px-4 py-3 text-sm ${profileMsg.includes("success") ? "border-green-200 bg-green-50 text-green-700" : "border-red-200 bg-red-50 text-red-700"}`}>{profileMsg}</div>
-              )}
-              <div className="space-y-4">
-                <label className="flex cursor-pointer items-start gap-4 rounded-xl border border-gray-200 p-4 hover:bg-gray-50">
-                  <input type="checkbox" checked={allowRequests} onChange={(e) => setAllowRequests(e.target.checked)} className="mt-0.5 h-4 w-4 rounded accent-blue-600" />
-                  <div>
-                    <p className="font-medium text-gray-900 text-sm">Allow connection requests</p>
-                    <p className="text-xs text-gray-500 mt-0.5">Other users can send you connection requests. Only you see who sent them.</p>
-                  </div>
-                </label>
-                <label className="flex cursor-pointer items-start gap-4 rounded-xl border border-gray-200 p-4 hover:bg-gray-50">
-                  <input type="checkbox" checked={showInDirectory} onChange={(e) => setShowInDirectory(e.target.checked)} className="mt-0.5 h-4 w-4 rounded accent-blue-600" />
-                  <div>
-                    <p className="font-medium text-gray-900 text-sm">Show in Community Directory</p>
-                    <p className="text-xs text-gray-500 mt-0.5">Show your city/bio in the community directory. Your full name stays private.</p>
-                  </div>
-                </label>
-              </div>
-              <div className="mt-6 rounded-xl border border-blue-100 bg-blue-50 p-4 text-xs text-blue-700">
-                <strong>Privacy guarantee:</strong> Full names are stored as one-way hashes and never exposed via search.
-              </div>
-              <div className="mt-6 flex gap-3 border-t border-gray-100 pt-6">
-                <button type="submit" disabled={profileSaving} className="btn-gradient disabled:opacity-50">
-                  {profileSaving ? "Saving…" : "Save Privacy Settings"}
-                </button>
-              </div>
+               <h2 className="mb-6 text-xl font-bold text-gray-900">Privacy</h2>
+               <div className="space-y-4">
+                  <label className="flex items-center gap-3">
+                    <input type="checkbox" checked={allowRequests} onChange={e => setAllowRequests(e.target.checked)} />
+                    <span>Allow connection requests</span>
+                  </label>
+                  <label className="flex items-center gap-3">
+                    <input type="checkbox" checked={showInDirectory} onChange={e => setShowInDirectory(e.target.checked)} />
+                    <span>Show in Community Directory</span>
+                  </label>
+               </div>
+               <button type="submit" className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-xl">Save Privacy</button>
             </form>
           )}
 
-          {/* ── Security ─── */}
           {tab === "security" && (
-            <div className="space-y-6">
-              <div className="feature-card p-8">
-                <h2 className="mb-2 text-xl font-bold text-gray-900">Two-Factor Authentication (2FA)</h2>
-                <p className="mb-6 text-sm text-gray-500">Extra security via TOTP apps like Google Authenticator or Authy.</p>
-                <div className={`mb-6 flex items-center gap-3 rounded-xl border p-4 ${twoFAEnabled ? "border-green-200 bg-green-50" : "border-amber-200 bg-amber-50"}`}>
-                  <span className="text-2xl">{twoFAEnabled ? "✅" : "⚠️"}</span>
-                  <div>
-                    <p className={`font-semibold text-sm ${twoFAEnabled ? "text-green-800" : "text-amber-800"}`}>2FA is {twoFAEnabled ? "enabled" : "disabled"}</p>
-                    <p className={`text-xs ${twoFAEnabled ? "text-green-600" : "text-amber-600"}`}>
-                      {twoFAEnabled ? "Your account is protected by two-factor authentication." : "Enable 2FA for stronger account security."}
-                    </p>
-                  </div>
-                </div>
-                {twoFAMsg && <div className="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">{twoFAMsg}</div>}
-                {twoFAError && <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{twoFAError}</div>}
-
-                {twoFAPhase === "setup" && (
-                  <div className="mb-6 space-y-4">
-                    <div className="rounded-xl border border-gray-200 bg-gray-50 p-5 text-center">
-                      <p className="mb-3 text-sm font-medium text-gray-700">Scan this QR code with your authenticator app</p>
-                      {qrCode && <img src={qrCode} alt="2FA QR Code" className="mx-auto mb-3 h-48 w-48 rounded-xl border border-gray-300" />}
-                      <p className="text-xs text-gray-500">Or enter this secret manually:</p>
-                      <code className="mt-1 block rounded border border-gray-200 bg-white px-3 py-2 text-sm font-mono text-gray-800">{totpSecret}</code>
-                    </div>
-                    <form onSubmit={handleEnable2FA} className="flex gap-3">
-                      <input type="text" required pattern="\d{6}" maxLength={6} value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="6-digit code"
-                        className="flex-1 rounded-xl border border-gray-300 px-4 py-2.5 text-center font-mono text-lg tracking-widest focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200" />
-                      <button type="submit" disabled={twoFALoading || otpCode.length !== 6} className="rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50">
-                        {twoFALoading ? "Verifying…" : "Enable 2FA"}
-                      </button>
-                    </form>
-                    <button onClick={() => { setTwoFAPhase("idle"); setQrCode(""); setTotpSecret(""); }} className="text-sm text-gray-500 hover:text-gray-700">Cancel</button>
-                  </div>
-                )}
-
-                {twoFAPhase === "disable" && (
-                  <form onSubmit={handleDisable2FA} className="mb-6 space-y-4">
-                    <p className="text-sm text-gray-600">Enter your current TOTP code to confirm:</p>
-                    <div className="flex gap-3">
-                      <input type="text" required pattern="\d{6}" maxLength={6} value={otpCode} onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="6-digit code"
-                        className="flex-1 rounded-xl border border-gray-300 px-4 py-2.5 text-center font-mono text-lg tracking-widest focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200" />
-                      <button type="submit" disabled={twoFALoading || otpCode.length !== 6} className="rounded-xl bg-red-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50">
-                        {twoFALoading ? "…" : "Disable 2FA"}
-                      </button>
-                    </div>
-                    <button onClick={() => { setTwoFAPhase("idle"); setOtpCode(""); }} className="text-sm text-gray-500 hover:text-gray-700">Cancel</button>
-                  </form>
-                )}
-
-                {twoFAPhase === "idle" && (twoFAEnabled ? (
-                  <button onClick={() => { setTwoFAPhase("disable"); setTwoFAMsg(""); setTwoFAError(""); }}
-                    className="rounded-xl border border-red-200 bg-red-50 px-6 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-100">Disable 2FA</button>
-                ) : (
-                  <button onClick={handleSetup2FA} disabled={twoFALoading}
-                    className="rounded-xl bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50">
-                    {twoFALoading ? "Loading…" : "Set Up 2FA"}
-                  </button>
-                ))}
-              </div>
-              <div className="feature-card p-8">
-                <h2 className="mb-2 text-xl font-bold text-gray-900">Password</h2>
-                <p className="text-sm text-gray-500">To change your password, sign out and use the &quot;Forgot Password&quot; flow on the login page.</p>
-              </div>
-            </div>
+             <div className="feature-card p-8">
+                <h2 className="mb-4 text-xl font-bold text-gray-900">Security</h2>
+                <p>2FA Status: {twoFAEnabled ? "Enabled" : "Disabled"}</p>
+                <button onClick={() => setTwoFAPhase("setup")} className="mt-4 px-6 py-2 bg-slate-800 text-white rounded-xl">Configure 2FA</button>
+             </div>
           )}
         </div>
       </section>

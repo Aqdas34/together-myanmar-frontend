@@ -193,7 +193,7 @@ export default function ContactPage() {
                 
                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex items-start gap-3">
                    <span className="text-lg opacity-80">🛡️</span>
-                   <p className="text-xs font-medium text-slate-500 leading-relaxed">
+                   <p className="text-[14px] font-medium text-slate-500 leading-relaxed">
                      <strong className="text-slate-700">Privacy Assurance:</strong> Your information is kept secure and will only be used to respond to your inquiry.
                    </p>
                 </div>

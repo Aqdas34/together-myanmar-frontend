@@ -294,7 +294,7 @@ export default function EventsPage() {
               >
                 + Propose an Event
               </button>
-              <p className="text-xs font-medium text-slate-400 mt-3 text-center max-w-md leading-relaxed italic">
+              <p className="text-[14px] font-medium text-slate-500 mt-4 text-center max-w-lg leading-relaxed">
                 Community members can submit events related to education, advocacy, culture, or networking. Event organizers should ensure compliance with local laws and safety guidelines.
               </p>
             </div>

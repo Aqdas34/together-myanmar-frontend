@@ -119,7 +119,7 @@ function NewsPageInner() {
              <Link href="/contact" className="btn-primary shadow-xl shadow-primary-500/20 py-4 px-10 text-[15px]">
                Submit a Story
              </Link>
-             <p className="text-xs font-medium text-slate-500 mt-4 max-w-sm italic">
+             <p className="text-[14px] font-medium text-slate-500 mt-4 max-w-sm">
                Community members can share verified news, updates, and stories from Myanmar communities worldwide.
              </p>
           </div>

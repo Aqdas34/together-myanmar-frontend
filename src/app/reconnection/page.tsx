@@ -170,7 +170,7 @@ export default function ReconnectionPage() {
             <button onClick={() => { setTab("send"); document.getElementById("app")?.scrollIntoView({ behavior: "smooth" }); }} className="btn-primary text-lg px-8 py-4 w-full sm:w-auto flex items-center justify-center">
               Send a Reconnection Request
             </button>
-            <p className="text-sm text-slate-500 font-medium flex items-center justify-center sm:justify-start gap-2 mt-4 sm:mt-0">
+            <p className="text-[14px] text-slate-500 font-medium flex items-center justify-center sm:justify-start gap-2 mt-4 sm:mt-0">
                <span className="text-emerald-500 text-lg">🔒</span> Designed with privacy and community safety in mind.
             </p>
           </div>

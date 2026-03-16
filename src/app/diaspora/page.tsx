@@ -334,7 +334,7 @@ export default function DiasporaDirectoryPage() {
             >
               + ADD YOUR PROFILE
             </button>
-            <p className="text-xs font-medium text-slate-500 text-center md:text-right max-w-[280px]">
+            <p className="text-[14px] font-medium text-slate-500 text-center md:text-right max-w-[280px]">
               Join the global Myanmar community network by creating your profile.
             </p>
           </div>
@@ -354,7 +354,7 @@ export default function DiasporaDirectoryPage() {
                  value={search}
                  onChange={(e) => setSearch(e.target.value)}
                />
-               <p className="text-[11px] font-medium text-slate-400 mt-2 ml-2 italic">Search by name, location, organization, or mission.</p>
+               <p className="text-[14px] font-medium text-slate-500 mt-2 ml-2">Search by name, location, organization, or mission.</p>
             </div>
             <div className="flex flex-wrap gap-2 w-full flex-1 md:flex-none">
               <select
