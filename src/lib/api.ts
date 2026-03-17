@@ -1,7 +1,17 @@
-// const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
-// const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://187.124.159.29:8000/api/v1";
-// Replace the IP with your new secure domain
+// const API_BASE = process.env.NEXT_PUBLIC_API_URL || 
+//   (typeof window !== "undefined" && window.location.hostname === "localhost" 
+//     ? "http://localhost:8000/api/v1" 
+//     : "https://togethermyanmar.org/api/v1");
+// const API_BASE = process.env.NEXT_PUBLIC_API_URL ||
+//   (typeof window !== "undefined" && window.location.hostname === "localhost"
+//     ? "http://localhost:8000/api/v1"
+//     : "https://togethermyanmar.org/api/v1");
+
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://togethermyanmar.org/api/v1";
+
+// We ensure IMAGE_BASE points to the API root so that Nginx proxies /uploads correctly
+export const IMAGE_BASE = API_BASE.replace("/api/v1", "");
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -125,14 +135,14 @@ export async function getMe(token: string): Promise<AuthUser> {
 // ─── Admin Stats ──────────────────────────────────────────────────────────────
 
 export interface AdminStats {
-  users:     { total: number; verified: number; active: number };
-  news:      { total: number; published: number };
+  users: { total: number; verified: number; active: number };
+  news: { total: number; published: number };
   resources: { total: number; approved: number; pending: number };
-  messages:  { total: number };
-  volunteers:{ total: number };
-  forum:     { threads: number };
-  events:    { total: number };
-  diaspora:  { pending: number };
+  messages: { total: number };
+  volunteers: { total: number };
+  forum: { threads: number };
+  events: { total: number };
+  diaspora: { pending: number };
 }
 
 export async function getAdminStats(token: string): Promise<AdminStats> {

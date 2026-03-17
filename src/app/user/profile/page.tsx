@@ -23,6 +23,7 @@ import {
   type UserProfile,
   type FamilyRelationship,
   type Country,
+  IMAGE_BASE,
 } from "@/lib/api";
 
 type Tab = "profile" | "family" | "privacy" | "security";
@@ -114,7 +115,7 @@ function UserProfileInner() {
         setPreferredLanguage(p.preferred_language || user.preferred_language || "en");
         setShowInDirectory(p.show_in_diaspora_directory);
         setAllowRequests(p.privacy_allow_connection_requests);
-        if (p.avatar_url) setAvatarPreview(`http://localhost:8000${p.avatar_url}`);
+        if (p.avatar_url) setAvatarPreview(`${IMAGE_BASE}${p.avatar_url}`);
       } catch (err) {
         console.log("Profile load failed, likely initial setup", err);
       }
@@ -180,12 +181,12 @@ function UserProfileInner() {
       const p = await uploadAvatar(token, file);
       setProfile(p);
       if (p.avatar_url) {
-        setAvatarPreview(`http://localhost:8000${p.avatar_url}`);
+        setAvatarPreview(`${IMAGE_BASE}${p.avatar_url}`);
       }
       setAvatarMsg("Profile picture updated.");
     } catch (err) {
       setAvatarMsg(err instanceof ApiError ? err.message : "Upload failed.");
-      setAvatarPreview(profile?.avatar_url ? `http://localhost:8000${profile.avatar_url}` : localUrl);
+      setAvatarPreview(profile?.avatar_url ? `${IMAGE_BASE}${profile.avatar_url}` : localUrl);
     } finally {
       setAvatarUploading(false);
       if (avatarInputRef.current) avatarInputRef.current.value = "";
