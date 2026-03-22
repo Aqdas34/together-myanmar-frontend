@@ -2,22 +2,26 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { getResourceCategories, getResources, ResourceCategory, Resource } from "@/lib/api";
+import { getResourceCategories, getResources, getCountries, ResourceCategory, Resource, Country } from "@/lib/api";
 
 const CAT_META: Record<string, { icon: string; color: string; border: string; accent: string }> = {
-  education:           { icon: "🎓", color: "text-blue-700",   border: "border-blue-200 bg-blue-50",   accent: "bg-blue-500" },
-  employment:          { icon: "💼", color: "text-emerald-700", border: "border-emerald-200 bg-emerald-50", accent: "bg-emerald-500" },
-  "legal-aid":         { icon: "⚖️",  color: "text-amber-700",  border: "border-amber-200 bg-amber-50",  accent: "bg-amber-500" },
-  health:              { icon: "🏥", color: "text-rose-700",   border: "border-rose-200 bg-rose-50",   accent: "bg-rose-500" },
-  "community-programs":{ icon: "🤝", color: "text-indigo-700", border: "border-indigo-200 bg-indigo-50", accent: "bg-indigo-500" },
+  "immigration-support":      { icon: "🛂", color: "text-blue-700",     border: "border-blue-200 bg-blue-50",   accent: "bg-blue-500" },
+  "legal-aid-documentation":  { icon: "⚖️", color: "text-amber-700",    border: "border-amber-200 bg-amber-50",  accent: "bg-amber-500" },
+  "human-rights-advocacy":    { icon: "📢", color: "text-purple-700",   border: "border-purple-200 bg-purple-50", accent: "bg-purple-500" },
+  "healthcare-mental-health": { icon: "🏥", color: "text-rose-700",     border: "border-rose-200 bg-rose-50",   accent: "bg-rose-500" },
+  "education-scholarships":   { icon: "🎓", color: "text-indigo-700",   border: "border-indigo-200 bg-indigo-50", accent: "bg-indigo-500" },
+  "jobs-livelihoods":         { icon: "💼", color: "text-emerald-700",  border: "border-emerald-200 bg-emerald-50", accent: "bg-emerald-500" },
+  "housing-shelter":          { icon: "🏠", color: "text-orange-700",   border: "border-orange-200 bg-orange-50", accent: "bg-orange-500" },
+  "emergency-assistance":     { icon: "🆘", color: "text-red-700",      border: "border-red-200 bg-red-50",     accent: "bg-red-500" },
+  "community-organizations":  { icon: "🤝", color: "text-teal-700",     border: "border-teal-200 bg-teal-50",    accent: "bg-teal-500" },
+  "women-gender-support":     { icon: "👩", color: "text-pink-700",     border: "border-pink-200 bg-pink-50",   accent: "bg-pink-500" },
+  "youth-student-support":    { icon: "🧒", color: "text-cyan-700",     border: "border-cyan-200 bg-cyan-50",   accent: "bg-cyan-500" },
+  "digital-security":         { icon: "🔒", color: "text-slate-700",    border: "border-slate-300 bg-slate-50", accent: "bg-slate-700" },
+  "news-independent-media":   { icon: "📰", color: "text-zinc-700",     border: "border-zinc-300 bg-zinc-50",   accent: "bg-zinc-700" },
 };
-const DEFAULT_META = { icon: "📄", color: "text-slate-700", border: "border-slate-200 bg-slate-50", accent: "bg-slate-400" };
+const DEFAULT_META = { icon: "", color: "text-slate-700", border: "border-slate-200 bg-slate-50", accent: "bg-slate-400" };
 
 const RESOURCE_TYPES = ["Online", "In-Person", "Hotline", "Document", "Organization"];
-const COUNTRIES = [
-  "Thailand", "Malaysia", "Singapore", "Japan", "South Korea",
-  "Australia", "United Kingdom", "United States", "Germany", "Other",
-];
 
 function ResourceCard({ resource, category }: { resource: Resource; category?: ResourceCategory }) {
   const meta = category ? (CAT_META[category.slug] ?? DEFAULT_META) : DEFAULT_META;
@@ -79,6 +83,7 @@ function ResourceCard({ resource, category }: { resource: Resource; category?: R
 
 export default function ResourcesPage() {
   const [categories, setCategories] = useState<ResourceCategory[]>([]);
+  const [countries, setCountries] = useState<Country[]>([]);
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -89,6 +94,7 @@ export default function ResourcesPage() {
 
   useEffect(() => {
     getResourceCategories().then(setCategories).catch(() => {});
+    getCountries().then(setCountries).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -146,29 +152,6 @@ export default function ResourcesPage() {
         </div>
       </header>
 
-      {/* Categories Visual Icons */}
-      <section className="border-b border-slate-100 bg-white">
-        <div className="mx-auto max-w-7xl px-6 py-8">
-          <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 lg:gap-8">
-            <button onClick={() => { setSelectedCategory(""); document.getElementById("directory")?.scrollIntoView({ behavior: "smooth" }); }} className="flex flex-col items-center gap-2 group">
-              <div className={`h-14 w-14 rounded-2xl flex items-center justify-center text-2xl shadow-sm transition-transform group-hover:-translate-y-1 ${selectedCategory === "" ? "bg-primary-600 text-white" : "bg-slate-50 border border-slate-200"}`}>🌐</div>
-              <span className={`text-xs font-bold uppercase tracking-tight ${selectedCategory === "" ? "text-primary-600" : "text-slate-500"}`}>All</span>
-            </button>
-            {categories.map((cat) => {
-              const m = CAT_META[cat.slug] ?? DEFAULT_META;
-              const isSelected = selectedCategory === cat.id;
-              return (
-                <button key={cat.id} onClick={() => { setSelectedCategory(cat.id); document.getElementById("directory")?.scrollIntoView({ behavior: "smooth" }); }} className="flex flex-col items-center gap-2 group">
-                  <div className={`h-14 w-14 rounded-2xl flex items-center justify-center text-2xl shadow-sm transition-transform group-hover:-translate-y-1 ${isSelected ? "bg-primary-600 text-white" : "bg-white border border-slate-200"}`}>
-                    {m.icon}
-                  </div>
-                  <span className={`text-xs font-bold uppercase tracking-tight ${isSelected ? "text-primary-600" : "text-slate-500"}`}>{cat.name_en}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </section>
 
       {/* Featured Resources Starter (Static examples while DB empty) */}
       {!hasFilters && resources.length === 0 && !loading && (
@@ -219,23 +202,36 @@ export default function ResourcesPage() {
                 >
                   All Categories
                 </button>
-                {categories.map((cat) => {
-                  const m = CAT_META[cat.slug] ?? DEFAULT_META;
-                  return (
-                    <button
-                      key={cat.id}
-                      onClick={() => setSelectedCategory(cat.id)}
-                      className={`w-full rounded-xl px-4 py-2.5 text-left text-sm font-bold transition-all ${
-                        selectedCategory === cat.id 
-                          ? "bg-primary-600 text-white shadow-md shadow-primary-200" 
-                          : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
-                      }`}
-                    >
-                      <span className="mr-2 opacity-70">{m.icon}</span>
-                      {cat.name_en}
-                    </button>
-                  );
-                })}
+
+                {Object.entries(
+                  categories.reduce((acc, cat) => {
+                    const group = cat.group_name || "Other";
+                    if (!acc[group]) acc[group] = [];
+                    acc[group].push(cat);
+                    return acc;
+                  }, {} as Record<string, ResourceCategory[]>)
+                ).map(([group, cats]) => (
+                  <div key={group} className="pt-2">
+                    <h4 className="px-4 py-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">{group}</h4>
+                    {cats.map((cat) => {
+                      const m = CAT_META[cat.slug] ?? DEFAULT_META;
+                      return (
+                        <button
+                          key={cat.id}
+                          onClick={() => setSelectedCategory(cat.id)}
+                          className={`w-full rounded-xl px-4 py-2.5 text-left text-sm font-bold transition-all ${
+                            selectedCategory === cat.id 
+                              ? "bg-primary-600 text-white shadow-md shadow-primary-200" 
+                              : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                          }`}
+                        >
+                          <span className="mr-2 opacity-70">{m.icon}</span>
+                          {cat.name_en}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -248,7 +244,7 @@ export default function ResourcesPage() {
                 className="input-modern bg-slate-50 border-slate-100 font-bold text-sm"
               >
                 <option value="">Global Network</option>
-                {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                {countries.map((c) => <option key={c.id} value={c.name_en}>{c.name_en}</option>)}
               </select>
             </div>
 

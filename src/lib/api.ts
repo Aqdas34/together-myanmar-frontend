@@ -8,7 +8,8 @@
 //     : "https://togethermyanmar.org/api/v1");
 
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://togethermyanmar.org/api/v1";
+// const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://togethermyanmar.org/api/v1";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 // We ensure IMAGE_BASE points to the API root so that Nginx proxies /uploads correctly
 export const IMAGE_BASE = API_BASE.replace("/api/v1", "");
@@ -313,6 +314,7 @@ export interface ResourceCategory {
   slug: string;
   name_en: string;
   name_my: string;
+  group_name: string | null;
   display_order: number;
   created_at: string;
   updated_at: string;
@@ -434,6 +436,7 @@ export interface UserProfile {
   updated_at: string;
 }
 
+
 export interface UserProfilePayload {
   full_name: string;
   city?: string;
@@ -443,6 +446,15 @@ export interface UserProfilePayload {
   show_in_diaspora_directory?: boolean;
   privacy_allow_connection_requests?: boolean;
 }
+
+export interface SiteSetting {
+  key: string;
+  value_bool: boolean | null;
+  value_str: string | null;
+  description: string | null;
+  is_public: boolean;
+}
+
 
 export interface FamilyRelationship {
   id: string;
@@ -548,6 +560,32 @@ export interface Country {
 export async function getCountries(): Promise<Country[]> {
   const res = await fetch(`${API_BASE}/profile/countries`, { cache: "force-cache" });
   return handleResponse<Country[]>(res);
+}
+
+export async function getPublicSettings(): Promise<Record<string, any>> {
+  const res = await fetch(`${API_BASE}/settings`, { cache: "no-store" });
+  return handleResponse<Record<string, any>>(res);
+}
+
+export async function adminGetSettings(token: string): Promise<SiteSetting[]> {
+  const res = await fetch(`${API_BASE}/admin/settings`, {
+    headers: { Authorization: `Bearer ${token}` },
+    cache: "no-store",
+  });
+  return handleResponse<SiteSetting[]>(res);
+}
+
+export async function adminUpdateSetting(
+  token: string,
+  key: string,
+  data: { value_bool?: boolean; value_str?: string }
+): Promise<SiteSetting> {
+  const res = await fetch(`${API_BASE}/admin/settings/${key}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(data),
+  });
+  return handleResponse<SiteSetting>(res);
 }
 
 // ─── 2FA ──────────────────────────────────────────────────────────────────────

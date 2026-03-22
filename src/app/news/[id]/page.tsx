@@ -7,7 +7,9 @@ import { getNewsPost, getAdjacentNewsPosts, type NewsPost } from "@/lib/api";
 import { useLanguage } from "@/lib/language-context";
 
 const COLOR_POOL = [
-  "#2563eb", "#059669", "#7c3aed", "#dc2626", "#d97706", "#0891b2", "#be185d",
+  "#4f46e5", // Primary Indigo
+  "#2563eb", // Blue 600
+  "#059669", "#7c3aed", "#dc2626", "#d97706", "#0891b2",
 ];
 
 function colorForPost(post: NewsPost): string {

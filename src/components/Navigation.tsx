@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
-import { getMe, getUnreadNotificationCount } from "@/lib/api";
+import { getMe, getUnreadNotificationCount, getPublicSettings } from "@/lib/api";
 import { useLanguage } from "@/lib/language-context";
 
 const NAV_LINKS = [
@@ -26,6 +26,7 @@ export default function Navigation() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userEmail,  setUserEmail]  = useState("");
   const [unreadCount, setUnreadCount] = useState(0);
+  const [settings, setSettings] = useState<Record<string, any>>({});
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Close mobile menu on route change
@@ -58,6 +59,15 @@ export default function Navigation() {
 
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
   }, [pathname]);
+
+  useEffect(() => {
+    getPublicSettings().then(setSettings).catch(() => {});
+  }, []);
+
+  const visibleNavLinks = NAV_LINKS.filter(link => {
+    if (link.href === "/donate") return settings.enable_donations === true;
+    return true;
+  });
 
   function handleSignOut() {
     localStorage.removeItem("access_token");
@@ -137,7 +147,7 @@ export default function Navigation() {
 
           {/* ── Desktop nav links ─────────────────────────── */}
           <div className="hidden items-center gap-2 lg:flex">
-            {NAV_LINKS.map((link) => {
+            {visibleNavLinks.map((link) => {
               const active = isActive(link.href);
               return (
                 <Link
@@ -237,7 +247,7 @@ export default function Navigation() {
       {isOpen && (
         <div className="animate-fade-in border-t border-slate-100 bg-white px-4 pb-8 pt-4 lg:hidden">
           <div className="flex flex-col gap-1">
-            {NAV_LINKS.map((link) => {
+            {visibleNavLinks.map((link) => {
               const active = isActive(link.href);
               return (
                 <Link

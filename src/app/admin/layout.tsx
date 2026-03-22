@@ -16,6 +16,7 @@ const navItems: NavItem[] = [
   { href: "/admin/volunteers", label: "Volunteers", icon: "🙋" },
   { href: "/admin/newsletter", label: "Newsletter", icon: "📧" },
   { href: "/admin/content", label: "Page Content", icon: "✏️" },
+  { href: "/admin/settings", label: "Settings", icon: "⚙️" },
 ];
 
 const communityNavItems: NavItem[] = [

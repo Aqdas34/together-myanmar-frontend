@@ -6,11 +6,13 @@ import {
   getDiasporaListings,
   getMyDiasporaListings,
   submitDiasporaListing,
+  getCountries,
   type DiasporaListing,
+  type Country,
 } from "@/lib/api";
 
 const TYPE_COLORS: Record<string, string> = {
-  individual: "bg-blue-50 text-blue-700",
+  individual: "bg-primary-50 text-primary-700",
   organization: "bg-emerald-50 text-emerald-700",
 };
 
@@ -90,13 +92,16 @@ export default function DiasporaDirectoryPage() {
     listing_type: "individual",
     name: "",
     description: "",
-    mission: "",
+    mission_tags: [] as string[],
     role: "",
+    country_id: "" as string | number,
     city: "",
     contact_email: "",
     website_url: "",
     privacy: "public",
+    hide_contact: false,
   });
+  const [countries, setCountries] = useState<Country[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [submitMsg, setSubmitMsg] = useState("");
 
@@ -106,6 +111,7 @@ export default function DiasporaDirectoryPage() {
   }, []);
 
   useEffect(() => {
+    getCountries().then(setCountries).catch(() => {});
     if (!token) return;
     getMyDiasporaListings(token)
       .then(setMyListings)
@@ -134,17 +140,33 @@ export default function DiasporaDirectoryPage() {
     setSubmitting(true);
     setSubmitMsg("");
     try {
-      const fullDescription = `[Mission: ${form.mission}] [Role: ${form.role}] [Privacy: ${form.privacy}]\n\n${form.description}`;
+      const missionStr = form.mission_tags.join(", ");
+      const contactFlag = form.hide_contact ? "[Contact: Private/Platform Only]" : "";
+      const fullDescription = `[Missions: ${missionStr}] [Role: ${form.role}] [Privacy: ${form.privacy}] ${contactFlag}\n\n${form.description}`;
       const apiListingType = ["individual"].includes(form.listing_type) ? "individual" : "organization";
 
       const newListing = await submitDiasporaListing(token, {
         ...form,
         listing_type: apiListingType as "individual" | "organization",
-        description: fullDescription
+        description: fullDescription,
+        country_id: form.country_id ? Number(form.country_id) : undefined,
+        contact_email: form.hide_contact ? "" : form.contact_email,
       });
       setMyListings((prev) => [newListing, ...prev]);
       setSubmitMsg("Listing submitted! Profiles are reviewed before publication to ensure authenticity and safety.");
-      setForm({ listing_type: "individual", name: "", description: "", mission: "", role: "", city: "", contact_email: "", website_url: "", privacy: "public" });
+      setForm({
+        listing_type: "individual",
+        name: "",
+        description: "",
+        mission_tags: [],
+        role: "",
+        country_id: "",
+        city: "",
+        contact_email: "",
+        website_url: "",
+        privacy: "public",
+        hide_contact: false
+      });
       setShowSubmit(false);
     } catch (err: unknown) {
       setSubmitMsg((err as Error).message || "Failed to submit listing");
@@ -161,9 +183,9 @@ export default function DiasporaDirectoryPage() {
              
              <div>
                 <h2 className="text-2xl font-black text-slate-900 mb-2">Create Profile</h2>
-                <p className="text-sm font-medium text-slate-500 leading-relaxed">
-                   This directory is open to individuals and organizations working with Myanmar communities worldwide. Profiles are reviewed before publication to ensure authenticity and safety.
-                </p>
+                 <p className="text-sm font-medium text-slate-500 leading-relaxed">
+                   Join a trusted network of people and organizations supporting Myanmar communities worldwide. Profiles are reviewed to keep the space safe.
+                 </p>
              </div>
 
             {submitMsg && (
@@ -171,21 +193,24 @@ export default function DiasporaDirectoryPage() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-1">
+              <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Entity Type</label>
-                <select
-                  className="input-modern bg-slate-50 border-slate-100"
-                  value={form.listing_type}
-                  onChange={(e) =>
-                    setForm({ ...form, listing_type: e.target.value })
-                  }
-                >
-                  <option value="individual">Individual</option>
-                  <option value="organization">Organization</option>
-                  <option value="community_group">Community Group</option>
-                  <option value="mutual_aid">Mutual Aid Group</option>
-                  <option value="advocacy">Advocacy Initiative</option>
-                </select>
+                <div className="flex gap-3">
+                   <button
+                     type="button"
+                     onClick={() => setForm({ ...form, listing_type: "individual" })}
+                     className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 transition-all font-bold ${form.listing_type === "individual" ? "border-primary-600 bg-primary-50 text-primary-700" : "border-slate-100 bg-slate-50 text-slate-400 hover:border-slate-200"}`}
+                   >
+                     <span className="text-lg">👤</span> Individual
+                   </button>
+                   <button
+                     type="button"
+                     onClick={() => setForm({ ...form, listing_type: "organization" })}
+                     className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl border-2 transition-all font-bold ${form.listing_type === "organization" ? "border-primary-600 bg-primary-50 text-primary-700" : "border-slate-100 bg-slate-50 text-slate-400 hover:border-slate-200"}`}
+                   >
+                     <span className="text-lg">🏢</span> Organization
+                   </button>
+                </div>
               </div>
 
               <div className="space-y-1">
@@ -198,66 +223,121 @@ export default function DiasporaDirectoryPage() {
                   required
                 />
               </div>
+                         <div className="space-y-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Mission / Focus Areas (Multi-select)</label>
+                    <div className="flex flex-wrap gap-2 pt-1">
+                       {[
+                         { id: "human_rights", label: "Human rights" },
+                         { id: "education", label: "Education" },
+                         { id: "culture", label: "Culture" },
+                         { id: "advocacy", label: "Advocacy" },
+                         { id: "humanitarian", label: "Humanitarian aid" },
+                         { id: "community_support", label: "Community Support" },
+                         { id: "youth", label: "Youth" },
+                         { id: "women", label: "Women" },
+                         { id: "mental_health", label: "Mental Health" },
+                         { id: "refugee_support", label: "Refugee Support" },
+                         { id: "legal_aid", label: "Legal Aid" },
+                         { id: "media", label: "Media / Journalism" },
+                         { id: "economics", label: "Economic Empowerment" },
+                       ].map((tag) => {
+                         const isSelected = form.mission_tags.includes(tag.label);
+                         return (
+                           <button
+                             key={tag.id}
+                             type="button"
+                             onClick={() => {
+                               const next = isSelected 
+                                 ? form.mission_tags.filter(t => t !== tag.label)
+                                 : [...form.mission_tags, tag.label];
+                               setForm({ ...form, mission_tags: next });
+                             }}
+                             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${isSelected ? "bg-primary-600 border-primary-600 text-white" : "bg-white border-slate-200 text-slate-500 hover:border-primary-300 hover:text-primary-600"}`}
+                           >
+                             {tag.label}
+                           </button>
+                         );
+                       })}
+                    </div>
+                  </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                 <div className="space-y-1">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Organization or Role</label>
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Specific Role or Department</label>
                     <input
                       className="input-modern"
-                      placeholder="e.g. Volunteer, Director"
+                      placeholder="e.g. Director, Case Worker, Volunteer Coordinator"
                       value={form.role}
                       onChange={(e) => setForm({ ...form, role: e.target.value })}
                     />
-                 </div>
-                 <div className="space-y-1">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Mission or Focus Tag</label>
-                    <select
-                      className="input-modern bg-slate-50 border-slate-100"
-                      value={form.mission}
-                      onChange={(e) => setForm({ ...form, mission: e.target.value })}
-                    >
-                      <option value="">Select Primary Focus...</option>
-                      <option value="human_rights">Human rights</option>
-                      <option value="education">Education</option>
-                      <option value="culture">Culture</option>
-                      <option value="advocacy">Advocacy</option>
-                      <option value="humanitarian">Humanitarian aid</option>
-                    </select>
-                 </div>
+                  </div>
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Profile Narrative</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex justify-between">
+                   Profile Narrative
+                   <span className="text-[9px] lowercase opacity-50">Suggestion: 50–300 words</span>
+                </label>
+                <div className="text-[11px] text-slate-400 font-medium mb-2 italic">“What do you do? Who do you support? What are your goals?”</div>
                 <textarea
                   className="input-modern resize-none"
-                  rows={3}
+                  rows={4}
                   placeholder="Tell the community who you are and what your goals are..."
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
                 />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Geographic Base</label>
-                <input
-                  className="input-modern"
-                  placeholder="e.g. Bangkok, London, Tokyo"
-                  value={form.city}
-                  onChange={(e) => setForm({ ...form, city: e.target.value })}
-                />
+                <div className="flex justify-end pr-1 pt-1">
+                   <span className={`text-[10px] font-black ${form.description.length > 1500 ? "text-red-500" : "text-slate-300"}`}>{form.description.length} characters</span>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                  <div className="space-y-1">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Public Contact</label>
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Country</label>
+                    <select
+                      className="input-modern bg-slate-50 border-slate-100"
+                      value={form.country_id}
+                      onChange={(e) => setForm({ ...form, country_id: e.target.value })}
+                    >
+                      <option value="">Select Country...</option>
+                      {countries.map(c => (
+                        <option key={c.id} value={c.id}>{c.name_en}</option>
+                      ))}
+                    </select>
+                 </div>
+                 <div className="space-y-1">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">City (Optional)</label>
                     <input
-                      type="email"
                       className="input-modern"
-                      placeholder="hello@network.org"
-                      value={form.contact_email}
-                      onChange={(e) => setForm({ ...form, contact_email: e.target.value })}
+                      placeholder="e.g. Bangkok, London"
+                      value={form.city}
+                      onChange={(e) => setForm({ ...form, city: e.target.value })}
                     />
                  </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Public Contact Email</label>
+                     <p className="text-[10px] text-slate-400 font-medium mb-1">“Only share information you are comfortable making public.”</p>
+                     <input
+                       type="email"
+                       className="input-modern"
+                       placeholder="hello@network.org"
+                       value={form.contact_email}
+                       onChange={(e) => setForm({ ...form, contact_email: e.target.value })}
+                       disabled={form.hide_contact}
+                     />
+                     <label className="flex items-center gap-2 mt-2 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={form.hide_contact}
+                          onChange={(e) => setForm({ ...form, hide_contact: e.target.checked })}
+                          className="rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+                        />
+                        <span className="text-[11px] font-bold text-slate-600">🔒 Hide contact (platform messaging only)</span>
+                     </label>
+                  </div>
 
                  <div className="space-y-1">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Website or Social Link</label>

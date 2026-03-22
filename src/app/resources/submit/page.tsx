@@ -3,17 +3,14 @@
 import { useState, useEffect, FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { getMe, getResourceCategories, submitResource, ResourceCategory, ApiError } from "@/lib/api";
+import { getMe, getResourceCategories, getCountries, submitResource, ResourceCategory, Country, ApiError } from "@/lib/api";
 
 const RESOURCE_TYPES = ["Online", "In-Person", "Hotline", "Document", "Organization"];
-const COUNTRIES = [
-  "Thailand", "Malaysia", "Singapore", "Japan", "South Korea",
-  "Australia", "United Kingdom", "United States", "Germany", "Other",
-];
 
 export default function ResourceSubmitPage() {
   const router = useRouter();
   const [categories, setCategories] = useState<ResourceCategory[]>([]);
+  const [countries, setCountries] = useState<Country[]>([]);
   const [authChecked, setAuthChecked] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -37,6 +34,7 @@ export default function ResourceSubmitPage() {
       .then(() => { setIsLoggedIn(true); setAuthChecked(true); })
       .catch(() => { setAuthChecked(true); });
     getResourceCategories().then(setCategories).catch(() => {});
+    getCountries().then(setCountries).catch(() => {});
   }, []);
 
   async function handleSubmit(e: FormEvent) {
@@ -178,7 +176,20 @@ export default function ResourceSubmitPage() {
                 </label>
                 <select {...field("category_id")} required className={inputCls}>
                   <option value="">Select category…</option>
-                  {categories.map((c) => <option key={c.id} value={c.id}>{c.name_en}</option>)}
+                  {Object.entries(
+                    categories.reduce((acc, cat) => {
+                      const group = cat.group_name || "Other";
+                      if (!acc[group]) acc[group] = [];
+                      acc[group].push(cat);
+                      return acc;
+                    }, {} as Record<string, ResourceCategory[]>)
+                  ).map(([group, cats]) => (
+                    <optgroup key={group} label={group}>
+                      {cats.map((c) => (
+                        <option key={c.id} value={c.id}>{c.name_en}</option>
+                      ))}
+                    </optgroup>
+                  ))}
                 </select>
               </div>
               <div>
@@ -194,7 +205,7 @@ export default function ResourceSubmitPage() {
               <label className="mb-1 block text-sm font-semibold text-gray-700">Country (optional)</label>
               <select {...field("country")} className={inputCls}>
                 <option value="">Select country…</option>
-                {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                {countries.map((c) => <option key={c.id} value={c.name_en}>{c.name_en}</option>)}
               </select>
             </div>
 
