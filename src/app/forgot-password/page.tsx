@@ -40,13 +40,14 @@ export default function ForgotPasswordPage() {
   return (
     <>
       {/* Hero strip */}
-      <section
-        className="px-6 py-12 text-center text-white"
-        style={{ background: "linear-gradient(135deg, #1d4ed8 0%, #4338ca 100%)" }}
-      >
-        <div className="mx-auto max-w-md">
-          <h1 className="text-3xl font-extrabold sm:text-4xl">Forgot Password</h1>
-          <p className="mt-2 text-sm" style={{ color: "#bfdbfe" }}>
+      <section className="relative overflow-hidden bg-slate-50 pt-16 pb-12 border-b border-slate-100 text-center">
+        <div className="absolute inset-0 bg-pattern opacity-[0.03] pointer-events-none" />
+        <div className="mx-auto max-w-2xl px-6 relative z-10">
+          <Link href="/login" className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-primary-600 hover:text-primary-700 transition-colors">
+            ← Back to Login
+          </Link>
+          <h1 className="hero-title text-3xl md:text-4xl mb-3">Forgot Password</h1>
+          <p className="text-lg text-slate-500 max-w-md mx-auto">
             We&apos;ll send a reset code to your email
           </p>
         </div>
@@ -94,14 +95,14 @@ export default function ForgotPasswordPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@example.com"
-                      className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100"
                     />
                   </div>
 
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full rounded-xl bg-blue-600 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="w-full rounded-xl bg-primary-600 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {loading ? "Sending…" : "Send Reset Code"}
                   </button>
@@ -120,7 +121,7 @@ export default function ForgotPasswordPage() {
 
                 <button
                   onClick={handleContinue}
-                  className="w-full rounded-xl bg-blue-600 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700"
+                  className="w-full rounded-xl bg-primary-600 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700"
                 >
                   Enter Reset Code →
                 </button>
@@ -129,7 +130,7 @@ export default function ForgotPasswordPage() {
 
             <div className="mt-6 text-center text-sm text-gray-500">
               Remember your password?{" "}
-              <Link href="/login" className="font-semibold text-blue-600 hover:text-blue-800">
+              <Link href="/login" className="font-semibold text-primary-600 hover:text-primary-800">
                 Sign in
               </Link>
             </div>

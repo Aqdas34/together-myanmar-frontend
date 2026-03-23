@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { getAdminUsers, getAdminUserProfile, adminUpdateUser, AdminUser, AdminUserProfile } from "@/lib/api";
+import { getAdminUsers, getAdminUserProfile, adminUpdateUser, getCountries, AdminUser, AdminUserProfile, Country } from "@/lib/api";
 
 const roleBadge: Record<string, string> = {
   admin: "bg-red-100 text-red-700",
@@ -16,6 +16,7 @@ const langLabel: Record<string, string> = {
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [total, setTotal] = useState(0);
+  const [countries, setCountries] = useState<Country[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
@@ -92,7 +93,10 @@ export default function AdminUsersPage() {
     finally { setProfileLoading(false); }
   }
 
-  useEffect(() => { fetchUsers(); }, [fetchUsers]);
+  useEffect(() => { 
+    getCountries().then(setCountries).catch(() => {});
+    fetchUsers(); 
+  }, [fetchUsers]);
 
   return (
     <div className="space-y-6">
@@ -232,7 +236,9 @@ export default function AdminUsersPage() {
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">Location</p>
                   <p className="mt-1 text-sm text-gray-700">
-                    {profileDetail.profile.country_id ? `Country ID: ${profileDetail.profile.country_id}` : "—"}
+                    {profileDetail?.profile?.country_id 
+                      ? (countries.find(c => c.id === profileDetail.profile?.country_id)?.name_en || `ID: ${profileDetail.profile.country_id}`)
+                      : "—"}
                     {profileDetail.profile.city ? ` · ${profileDetail.profile.city}` : ""}
                   </p>
                 </div>

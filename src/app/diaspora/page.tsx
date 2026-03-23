@@ -86,6 +86,7 @@ export default function DiasporaDirectoryPage() {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("");
   const [locationFilter, setLocationFilter] = useState("");
+  const [countryFilter, setCountryFilter] = useState("");
   const [showSubmit, setShowSubmit] = useState(false);
   
   const [form, setForm] = useState({
@@ -120,11 +121,15 @@ export default function DiasporaDirectoryPage() {
 
   const load = useCallback(() => {
     setLoading(true);
-    getDiasporaListings({ search: search || undefined, listing_type: typeFilter || undefined })
+    getDiasporaListings({ 
+      search: search || undefined, 
+      listing_type: typeFilter || undefined,
+      country_id: countryFilter ? Number(countryFilter) : undefined 
+    })
       .then(setListings)
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [search, typeFilter]);
+  }, [search, typeFilter, countryFilter]);
 
   useEffect(() => {
     const id = setTimeout(load, 300);
@@ -437,17 +442,27 @@ export default function DiasporaDirectoryPage() {
                <p className="text-[14px] font-medium text-slate-500 mt-2 ml-2">Search by name, location, organization, or mission.</p>
             </div>
             <div className="flex flex-wrap gap-2 w-full flex-1 md:flex-none">
-              <select
-                className="input-modern bg-slate-50 border-slate-200 h-12 text-sm font-bold w-full md:w-auto flex-1 min-w-[150px]"
-                value={locationFilter}
-                onChange={(e) => setLocationFilter(e.target.value)}
-              >
-                <option value="">Global Network</option>
-                <option value="Asia">Asia</option>
-                <option value="North America">North America</option>
-                <option value="Europe">Europe</option>
-                <option value="Australia">Australia</option>
-              </select>
+                <select
+                  className="input-modern bg-slate-50 border-slate-200 h-12 text-sm font-bold w-full md:w-auto flex-1 min-w-[150px]"
+                  value={countryFilter}
+                  onChange={(e) => setCountryFilter(e.target.value)}
+                >
+                  <option value="">Global Coverage (All Countries)</option>
+                  {countries.map(c => (
+                    <option key={c.id} value={c.id}>{c.name_en}</option>
+                  ))}
+                </select>
+                <select
+                  className="input-modern bg-slate-50 border-slate-200 h-12 text-sm font-bold w-full md:w-auto flex-1 min-w-[150px]"
+                  value={locationFilter}
+                  onChange={(e) => setLocationFilter(e.target.value)}
+                >
+                  <option value="">All Regions</option>
+                  <option value="Asia">Asia</option>
+                  <option value="North America">North America</option>
+                  <option value="Europe">Europe</option>
+                  <option value="Australia">Australia</option>
+                </select>
               <select
                 className="input-modern bg-slate-50 border-slate-200 h-12 text-sm font-bold w-full md:w-auto flex-1 min-w-[150px]"
                 value={typeFilter}
@@ -520,7 +535,7 @@ export default function DiasporaDirectoryPage() {
               <div className="flex items-center justify-center gap-4">
                 {(search || typeFilter || locationFilter) && (
                   <button
-                    onClick={() => { setSearch(""); setTypeFilter(""); setLocationFilter(""); }}
+                    onClick={() => { setSearch(""); setTypeFilter(""); setLocationFilter(""); setCountryFilter(""); }}
                     className="btn-secondary"
                   >
                     Clear Filters

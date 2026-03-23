@@ -18,6 +18,19 @@ const CAT_META: Record<string, { icon: string; color: string; border: string; ac
   "youth-student-support":    { icon: "🧒", color: "text-cyan-700",     border: "border-cyan-200 bg-cyan-50",   accent: "bg-cyan-500" },
   "digital-security":         { icon: "🔒", color: "text-slate-700",    border: "border-slate-300 bg-slate-50", accent: "bg-slate-700" },
   "news-independent-media":   { icon: "📰", color: "text-zinc-700",     border: "border-zinc-300 bg-zinc-50",   accent: "bg-zinc-700" },
+  
+  // Regional & Other
+  "asean-thailand-malaysia-indonesia": { icon: "🌏", color: "text-blue-600", border: "border-blue-100 bg-blue-50/30", accent: "bg-blue-400" },
+  "anti-trafficking-exploitation":    { icon: "🛡️", color: "text-red-600", border: "border-red-100 bg-red-50/30", accent: "bg-red-400" },
+  "crisis-response-protection":      { icon: "🆘", color: "text-orange-600", border: "border-orange-100 bg-orange-50/30", accent: "bg-orange-400" },
+  "cultural-religious-support":      { icon: "🕍", color: "text-purple-600", border: "border-purple-100 bg-purple-50/30", accent: "bg-purple-400" },
+  "europe-support-services":         { icon: "🇪🇺", color: "text-blue-700", border: "border-blue-100 bg-blue-50/30", accent: "bg-blue-500" },
+  "global-un-resources":             { icon: "🇺🇳", color: "text-sky-600", border: "border-sky-100 bg-sky-50/30", accent: "bg-sky-400" },
+  "language-integration-services":   { icon: "🗣️", color: "text-teal-600", border: "border-teal-100 bg-teal-50/30", accent: "bg-teal-400" },
+  "north-america-support-services":  { icon: "🇺🇸", color: "text-indigo-600", border: "border-indigo-100 bg-indigo-50/30", accent: "bg-indigo-400" },
+  "research-reports":                { icon: "📊", color: "text-slate-600", border: "border-slate-100 bg-slate-50/30", accent: "bg-slate-400" },
+  "south-asia-bangladesh-india":     { icon: "🇮🇳", color: "text-orange-700", border: "border-orange-100 bg-orange-50/30", accent: "bg-orange-500" },
+  "training-capacity-building":      { icon: "🛠️", color: "text-gray-600", border: "border-gray-100 bg-gray-50/30", accent: "bg-gray-400" },
 };
 const DEFAULT_META = { icon: "", color: "text-slate-700", border: "border-slate-200 bg-slate-50", accent: "bg-slate-400" };
 
@@ -188,7 +201,7 @@ export default function ResourcesPage() {
         <div className="mx-auto max-w-7xl flex flex-col gap-10 lg:flex-row">
 
           {/* Sidebar */}
-          <aside className="w-full shrink-0 space-y-6 lg:w-64">
+          <aside className="w-full shrink-0 space-y-6 lg:w-80">
             <div className="card-modern p-6 bg-white border-slate-200">
               <h3 className="mb-4 text-xs font-black text-slate-900 uppercase tracking-widest px-2">Knowledge Domains</h3>
               <div className="space-y-1">
@@ -219,14 +232,16 @@ export default function ResourcesPage() {
                         <button
                           key={cat.id}
                           onClick={() => setSelectedCategory(cat.id)}
-                          className={`w-full rounded-xl px-4 py-2.5 text-left text-sm font-bold transition-all ${
+                          className={`group w-full rounded-xl px-4 py-2.5 text-left text-sm font-bold transition-all flex items-center gap-3 ${
                             selectedCategory === cat.id 
                               ? "bg-primary-600 text-white shadow-md shadow-primary-200" 
                               : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
                           }`}
                         >
-                          <span className="mr-2 opacity-70">{m.icon}</span>
-                          {cat.name_en}
+                          <span className={`flex w-6 shrink-0 items-center justify-center transition-opacity ${selectedCategory === cat.id ? "opacity-100" : "opacity-60 group-hover:opacity-100"}`}>
+                            {m.icon || <span className="h-1.5 w-1.5 rounded-full bg-slate-300" />}
+                          </span>
+                          <span className="">{cat.name_en}</span>
                         </button>
                       );
                     })}

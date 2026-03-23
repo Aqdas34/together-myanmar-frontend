@@ -92,7 +92,7 @@ export default function ResourceSubmitPage() {
         <p className="max-w-sm text-gray-500">You must be logged in to submit a resource.</p>
         <Link
           href="/login?next=/resources/submit"
-          className="mt-2 rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700"
+          className="mt-2 rounded-xl bg-primary-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-primary-700"
         >
           Log In
         </Link>
@@ -114,7 +114,7 @@ export default function ResourceSubmitPage() {
         <div className="mt-2 flex gap-3">
           <Link
             href="/resources"
-            className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700"
+            className="rounded-xl bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-primary-700"
           >
             Browse Resources
           </Link>
@@ -132,21 +132,19 @@ export default function ResourceSubmitPage() {
     );
   }
 
-  const inputCls = "w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-200";
+  const inputCls = "w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100";
 
   return (
     <>
       {/* Hero */}
-      <section
-        className="px-6 py-14 text-white"
-        style={{ background: "linear-gradient(135deg, #059669 0%, #0d9488 100%)" }}
-      >
-        <div className="mx-auto max-w-2xl">
-          <Link href="/resources" className="mb-5 inline-flex items-center gap-1 text-sm text-white/70 hover:text-white">
+      <section className="relative overflow-hidden bg-slate-50 pt-16 pb-12 border-b border-slate-100">
+        <div className="absolute inset-0 bg-pattern opacity-[0.03] pointer-events-none" />
+        <div className="mx-auto max-w-2xl px-6 relative z-10">
+          <Link href="/resources" className="mb-4 inline-flex items-center gap-1 text-sm font-semibold text-primary-600 hover:text-primary-700 transition-colors">
             ← Back to Resources
           </Link>
-          <h1 className="mb-2 text-3xl font-extrabold">Submit a Resource</h1>
-          <p className="text-white/80">
+          <h1 className="hero-title text-3xl md:text-4xl mb-3">Submit a Resource</h1>
+          <p className="text-lg text-slate-500">
             Share a helpful resource with the Myanmar diaspora community. All submissions are reviewed before publication.
           </p>
         </div>
@@ -272,7 +270,7 @@ export default function ResourceSubmitPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-emerald-600 py-3 text-sm font-bold text-white hover:bg-emerald-700 disabled:opacity-60"
+              className="w-full rounded-xl bg-primary-600 py-3 text-sm font-bold text-white hover:bg-primary-700 disabled:opacity-60 transition-all active:scale-[0.99]"
             >
               {loading ? "Submitting…" : "Submit for Review"}
             </button>

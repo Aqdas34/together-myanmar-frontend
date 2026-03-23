@@ -558,7 +558,7 @@ export interface Country {
 }
 
 export async function getCountries(): Promise<Country[]> {
-  const res = await fetch(`${API_BASE}/profile/countries`, { cache: "force-cache" });
+  const res = await fetch(`${API_BASE}/profile/countries`, { cache: "no-store" });
   return handleResponse<Country[]>(res);
 }
 

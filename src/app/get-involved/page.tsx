@@ -1,12 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { submitVolunteerSignup, submitPartnershipInquiry } from "@/lib/api";
+import { useState, useEffect } from "react";
+import { submitVolunteerSignup, submitPartnershipInquiry, getCountries, type Country } from "@/lib/api";
 
-const COUNTRIES = [
-  "Thailand", "Malaysia", "Singapore", "Japan", "South Korea", "United States",
-  "United Kingdom", "Australia", "Canada", "Germany", "France", "Other",
-];
 const AREAS = [
   "Legal Aid", "Language Teaching", "Mental Health Support",
   "IT / Technology", "Community Events", "Fundraising", "Other",
@@ -21,6 +17,11 @@ export default function GetInvolvedPage() {
   });
   const [volBanner, setVolBanner] = useState<Banner>(null);
   const [volLoading, setVolLoading] = useState(false);
+  const [countries, setCountries] = useState<Country[]>([]);
+
+  useEffect(() => {
+    getCountries().then(setCountries).catch(() => {});
+  }, []);
 
   // -- Partnership form state
   const [part, setPart] = useState({
@@ -135,12 +136,13 @@ export default function GetInvolvedPage() {
                 <div className="space-y-1">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Jurisdiction</label>
                   <select
+                    required
                     value={vol.country_of_residence}
                     onChange={(e) => setVol({ ...vol, country_of_residence: e.target.value })}
                     className="input-modern bg-slate-50 border-slate-100"
                   >
                     <option value="">Global Residence...</option>
-                    {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                    {countries.map((c) => <option key={c.id} value={c.name_en}>{c.name_en}</option>)}
                   </select>
                 </div>
                 <div className="space-y-2">

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { useRef, Suspense, useEffect, useState, FormEvent } from "react";
@@ -135,7 +135,7 @@ function VerifyEmailInner() {
               </p>
               <Link
                 href="/user/profile?welcome=1"
-                className="inline-block rounded-xl bg-blue-600 px-8 py-3 text-sm font-semibold text-white hover:bg-blue-700"
+                className="inline-block rounded-xl bg-primary-600 px-8 py-3 text-sm font-semibold text-white hover:bg-primary-700 active:scale-[0.98] transition-all"
               >
                 Complete Your Profile
               </Link>
@@ -148,13 +148,11 @@ function VerifyEmailInner() {
 
   return (
     <>
-      <section
-        className="px-6 py-12 text-center text-white"
-        style={{ background: "linear-gradient(135deg, #1d4ed8 0%, #4338ca 100%)" }}
-      >
-        <div className="mx-auto max-w-md">
-          <h1 className="text-3xl font-extrabold sm:text-4xl">Verify your email</h1>
-          <p className="mt-2 text-sm" style={{ color: "#bfdbfe" }}>
+      <section className="relative overflow-hidden bg-slate-50 pt-12 pb-10 border-b border-slate-100 text-center">
+        <div className="absolute inset-0 bg-pattern opacity-[0.03] pointer-events-none" />
+        <div className="mx-auto max-w-md px-6 relative z-10">
+          <h1 className="hero-title text-3xl md:text-4xl mb-2">Verify your email</h1>
+          <p className="text-slate-500 text-sm">
             Enter the 6-digit code from your inbox
           </p>
         </div>
@@ -179,7 +177,7 @@ function VerifyEmailInner() {
                   id="email" type="email" required autoComplete="email"
                   value={email} onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
-                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                  className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100"
                 />
               </div>
 
@@ -195,7 +193,7 @@ function VerifyEmailInner() {
                       onChange={(e) => handleOtpChange(idx, e.target.value)}
                       onKeyDown={(e) => handleOtpKeyDown(idx, e)}
                       onPaste={handleOtpPaste}
-                      className="h-14 w-12 rounded-xl border-2 border-gray-300 text-center text-2xl font-bold text-gray-900 transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+                      className="h-14 w-12 rounded-xl border-2 border-gray-300 text-center text-2xl font-bold text-gray-900 transition-colors focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-100"
                     />
                   ))}
                 </div>
@@ -203,7 +201,7 @@ function VerifyEmailInner() {
 
               <button
                 type="submit" disabled={loading || otp.join("").length < 6}
-                className="w-full rounded-xl bg-blue-600 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                className="w-full rounded-xl bg-primary-600 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60 active:scale-[0.98] transition-all"
               >
                 {loading ? "Verifying..." : "Verify & Continue"}
               </button>
@@ -216,7 +214,7 @@ function VerifyEmailInner() {
               ) : (
                 <button
                   onClick={handleResend} disabled={resendLoading}
-                  className="font-semibold text-blue-600 hover:text-blue-800 disabled:opacity-60"
+                  className="font-semibold text-primary-600 hover:text-primary-800 disabled:opacity-60"
                 >
                   {resendLoading ? "Sending..." : "Resend code"}
                 </button>
