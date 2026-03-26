@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { getNewsPost, getAdjacentNewsPosts, type NewsPost } from "@/lib/api";
+import { getNewsPost, getAdjacentNewsPosts, type NewsPost, IMAGE_BASE } from "@/lib/api";
 import { useLanguage } from "@/lib/language-context";
 
 const COLOR_POOL = [
@@ -150,6 +150,17 @@ export default function NewsArticlePage() {
       {/* Body */}
       <section className="bg-white px-6 py-14">
         <div className="mx-auto max-w-3xl">
+          {post.image_url && (
+            <div className="mb-10 overflow-hidden rounded-3xl border border-gray-100 shadow-xl shadow-slate-200/50">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img 
+                src={`${IMAGE_BASE}${post.image_url}`} 
+                alt={title.text} 
+                className="h-full w-full object-cover max-h-[450px]" 
+              />
+            </div>
+          )}
+          
           {post.status === "archived" && (
             <div className="mb-8 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-3 text-sm text-amber-700">
               This article has been archived and may no longer reflect current information.

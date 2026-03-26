@@ -409,7 +409,7 @@ export async function moderateResource(
 
 export async function createResourceCategory(
   token: string,
-  data: { slug: string; name_en: string; name_my?: string; display_order?: number }
+  data: { slug: string; name_en: string; name_my?: string; group_name?: string; display_order?: number }
 ): Promise<ResourceCategory> {
   const res = await fetch(`${API_BASE}/resources/categories`, {
     method: "POST",
@@ -417,6 +417,27 @@ export async function createResourceCategory(
     body: JSON.stringify(data),
   });
   return handleResponse<ResourceCategory>(res);
+}
+
+export async function updateResourceCategory(
+  token: string,
+  id: number,
+  data: Partial<{ slug: string; name_en: string; name_my: string; group_name: string; display_order: number }>
+): Promise<ResourceCategory> {
+  const res = await fetch(`${API_BASE}/resources/categories/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(data),
+  });
+  return handleResponse<ResourceCategory>(res);
+}
+
+export async function deleteResourceCategory(token: string, id: number): Promise<void> {
+  const res = await fetch(`${API_BASE}/resources/categories/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok && res.status !== 204) throw new ApiError(res.status, res.statusText);
 }
 
 // ─── User Profile ──────────────────────────────────────────────────────────────
@@ -1280,6 +1301,7 @@ export interface NewsPost {
   body_th: string;
   body_ms: string;
   slug: string;
+  image_url: string | null;
   status: "draft" | "published" | "archived";
   published_at: string | null;
   created_at: string;
@@ -1353,6 +1375,17 @@ export async function adminDeleteNews(token: string, id: string): Promise<void> 
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok && res.status !== 204) throw new ApiError(res.status, res.statusText);
+}
+
+export async function adminUploadNewsImage(token: string, file: File): Promise<{ url: string }> {
+  const formData = new FormData();
+  formData.append("file", file);
+  const res = await fetch(`${API_BASE}/admin/upload-news-image`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  });
+  return handleResponse<{ url: string }>(res);
 }
 
 export async function adminCreateNewsCategory(token: string, data: Partial<NewsCategory>): Promise<NewsCategory> {

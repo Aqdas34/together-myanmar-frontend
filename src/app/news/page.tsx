@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { getNews, getNewsCategories, type NewsPost, type NewsCategory } from "@/lib/api";
+import { getNews, getNewsCategories, type NewsPost, type NewsCategory, IMAGE_BASE } from "@/lib/api";
 import { useLanguage } from "@/lib/language-context";
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -250,7 +250,25 @@ function NewsPageInner() {
                     {isFeatured && (
                        <div className="md:w-3 bg-primary-600 shrink-0" />
                     )}
-                      <div className="p-8 flex-1">
+                    
+                    {/* Thumbnail */}
+                    <div className="relative h-48 w-full shrink-0 overflow-hidden bg-slate-100 md:h-auto md:w-56 lg:w-72">
+                      {post.image_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img 
+                          src={`${IMAGE_BASE}${post.image_url}`} 
+                          alt={title} 
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-4xl opacity-20 grayscale">
+                          {CATEGORY_ICONS[post.categories[0]?.slug] || "📰"}
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                    </div>
+
+                    <div className="p-8 flex-1 flex flex-col">
                         <div className="mb-4 flex flex-wrap items-center gap-2">
                           {isFeatured && (
                              <span className="badge-modern bg-primary-900 text-white border-none py-1 px-3 text-[10px] font-black uppercase tracking-wider">🌟 Featured Story</span>

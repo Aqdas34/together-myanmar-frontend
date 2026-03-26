@@ -476,9 +476,93 @@ function UserProfileInner() {
 
           {tab === "security" && (
              <div className="feature-card p-8">
-                <h2 className="mb-4 text-xl font-bold text-gray-900">Security</h2>
-                <p>2FA Status: {twoFAEnabled ? "Enabled" : "Disabled"}</p>
-                <button onClick={() => setTwoFAPhase("setup")} className="mt-4 px-6 py-2 bg-slate-800 text-white rounded-xl">Configure 2FA</button>
+                <div className="mb-8">
+                  <h2 className="text-2xl font-black text-slate-900 tracking-tight leading-tight mb-2">Security & Identity</h2>
+                  <p className="text-[15px] font-bold text-slate-500">Protect your account with two-factor authentication (2FA).</p>
+                </div>
+
+                {twoFAMsg && <div className="mb-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-[13px] font-bold text-emerald-700">{twoFAMsg}</div>}
+                {twoFAError && <div className="mb-5 rounded-2xl border border-red-200 bg-red-50 px-5 py-3 text-[13px] font-bold text-red-700">{twoFAError}</div>}
+
+                <div className="rounded-3xl border border-slate-100 bg-slate-50/50 p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <p className="text-[10px] font-black text-slate-400 tracking-[0.15em] uppercase mb-1">Status</p>
+                      <div className="flex items-center gap-2">
+                        <div className={`h-2.5 w-2.5 rounded-full ${twoFAEnabled ? "bg-emerald-500 animate-pulse" : "bg-slate-300"}`} />
+                        <span className="text-[15px] font-black text-slate-900">{twoFAEnabled ? "2FA Enabled" : "2FA Disabled"}</span>
+                      </div>
+                    </div>
+                    {twoFAPhase === "idle" && (
+                      <button 
+                        onClick={twoFAEnabled ? () => setTwoFAPhase("disable") : handleSetup2FA}
+                        disabled={twoFALoading}
+                        className={`px-6 py-2.5 rounded-2xl text-[13px] font-black shadow-lg transition-all active:scale-95 ${twoFAEnabled ? "bg-white border border-red-100 text-red-600 hover:bg-red-50" : "bg-slate-900 text-white hover:bg-slate-800"}`}
+                      >
+                        {twoFALoading ? "Connecting..." : twoFAEnabled ? "Disable 2FA" : "Configure 2FA"}
+                      </button>
+                    )}
+                  </div>
+
+                  {twoFAPhase === "setup" && qrCode && (
+                    <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
+                      <div className="p-6 bg-white rounded-3xl border border-slate-100 flex flex-col md:flex-row items-center gap-8">
+                        <div className="shrink-0 bg-white p-2 rounded-2xl shadow-inner border border-slate-100">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={qrCode} alt="2FA QR Code" className="h-44 w-44" />
+                        </div>
+                        <div className="space-y-3">
+                          <p className="text-[13px] font-bold text-slate-600 leading-relaxed">
+                            1. Scan this QR code with your authenticator app (like Google Authenticator or Authy).
+                          </p>
+                          <p className="text-[11px] text-slate-400 font-medium">
+                            Or enter this code manually: <code className="bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200 font-mono text-slate-900 text-[12px] font-black">{totpSecret}</code>
+                          </p>
+                          <p className="text-[13px] font-bold text-slate-600 leading-relaxed">
+                            2. Enter the 6-digit code shown in your app below to finalize.
+                          </p>
+                        </div>
+                      </div>
+
+                      <form onSubmit={handleEnable2FA} className="flex gap-3">
+                        <input 
+                          type="text" 
+                          required 
+                          maxLength={6} 
+                          value={otpCode} 
+                          onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))} 
+                          placeholder="e.g. 123456" 
+                          className="flex-1 rounded-2xl border border-slate-200 px-6 py-3 text-[15px] font-bold focus:ring-2 focus:ring-primary-100 focus:border-primary-600 outline-none transition-all placeholder:text-slate-300" 
+                        />
+                        <button type="submit" disabled={twoFALoading} className="px-8 py-3 bg-primary-600 text-white font-black rounded-2xl hover:bg-primary-700 shadow-xl shadow-primary-200 transition-all active:scale-95 disabled:opacity-50">
+                          {twoFALoading ? "Verifying..." : "Enable 2FA"}
+                        </button>
+                        <button type="button" onClick={() => { setTwoFAPhase("idle"); setTwoFAError(""); }} className="px-5 py-3 text-[13px] font-black text-slate-400 hover:text-slate-600">Cancel</button>
+                      </form>
+                    </div>
+                  )}
+
+                  {twoFAPhase === "disable" && (
+                    <div className="space-y-5 animate-in fade-in slide-in-from-top-4 duration-500">
+                      <p className="text-[13px] font-bold text-slate-600">Please enter your 6-digit authentication code to disable 2FA.</p>
+                      <form onSubmit={handleDisable2FA} className="flex gap-3">
+                        <input 
+                          type="text" 
+                          required 
+                          maxLength={6} 
+                          value={otpCode} 
+                          onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ""))} 
+                          placeholder="6-digit code" 
+                          className="flex-1 rounded-2xl border border-slate-200 px-6 py-3 text-[15px] font-bold focus:ring-2 focus:ring-red-100 focus:border-red-600 outline-none transition-all" 
+                        />
+                        <button type="submit" disabled={twoFALoading} className="px-8 py-3 bg-red-600 text-white font-black rounded-2xl hover:bg-red-700 shadow-xl shadow-red-200 transition-all active:scale-95">
+                          {twoFALoading ? "Verifying..." : "Disable 2FA"}
+                        </button>
+                        <button type="button" onClick={() => { setTwoFAPhase("idle"); setTwoFAError(""); }} className="px-5 py-3 text-[13px] font-black text-slate-400 hover:text-slate-600">Cancel</button>
+                      </form>
+                    </div>
+                  )}
+                </div>
              </div>
           )}
         </div>

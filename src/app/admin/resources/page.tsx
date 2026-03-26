@@ -1,8 +1,9 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useCallback, FormEvent } from "react";
 import {
-  getAdminResources, getResourceCategories, moderateResource, createResourceCategory,
+  getAdminResources, getResourceCategories, moderateResource, 
+  createResourceCategory, updateResourceCategory, deleteResourceCategory,
   Resource, ResourceCategory, ApiError,
 } from "@/lib/api";
 
@@ -33,7 +34,10 @@ function CategoriesPanel({ token }: { token: string }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
-  const [form, setForm] = useState({ slug: "", name_en: "", name_my: "", display_order: "" });
+  const [editId, setEditId] = useState<number | null>(null);
+
+  const EMPTY_FORM = { slug: "", name_en: "", name_my: "", group_name: "", display_order: "" };
+  const [form, setForm] = useState(EMPTY_FORM);
   const inputCls = "w-full rounded-xl border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200";
 
   const load = useCallback(() => {
@@ -46,8 +50,11 @@ function CategoriesPanel({ token }: { token: string }) {
 
   useEffect(() => { load(); }, [load]);
 
-  // Auto-generate slug from english name
   function handleNameChange(val: string) {
+    if (editId) {
+      setForm((f) => ({ ...f, name_en: val }));
+      return;
+    }
     setForm((f) => ({
       ...f,
       name_en: val,
@@ -57,30 +64,66 @@ function CategoriesPanel({ token }: { token: string }) {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!form.slug || !form.name_en) { setMsg({ text: "Slug and English name are required.", ok: false }); return; }
+    if (!form.slug || !form.name_en) {
+      setMsg({ text: "Slug and English name are required.", ok: false });
+      return;
+    }
     setSaving(true);
     try {
-      await createResourceCategory(token, {
+      const payload = {
         slug: form.slug,
         name_en: form.name_en,
-        name_my: form.name_my || undefined,
+        name_my: form.name_my || "",
+        group_name: form.group_name || "",
         display_order: form.display_order ? Number(form.display_order) : 0,
-      });
-      setMsg({ text: `Category "${form.name_en}" created.`, ok: true });
-      setForm({ slug: "", name_en: "", name_my: "", display_order: "" });
+      };
+
+      if (editId) {
+        await updateResourceCategory(token, editId, payload);
+        setMsg({ text: `Category "${form.name_en}" updated.`, ok: true });
+      } else {
+        await createResourceCategory(token, payload);
+        setMsg({ text: `Category "${form.name_en}" created.`, ok: true });
+      }
+
+      setForm(EMPTY_FORM);
+      setEditId(null);
       load();
     } catch (err) {
-      setMsg({ text: err instanceof ApiError ? err.message : "Failed to create category.", ok: false });
+      setMsg({ text: err instanceof ApiError ? err.message : "Failed to save category.", ok: false });
     } finally {
       setSaving(false);
     }
   }
 
+  async function handleDelete(id: number, name: string) {
+    if (!confirm(`Are you sure you want to delete "${name}"? This may affect existing resources.`)) return;
+    try {
+      await deleteResourceCategory(token, id);
+      setMsg({ text: "Category deleted.", ok: true });
+      load();
+    } catch (err) {
+      setMsg({ text: "Failed to delete category.", ok: false });
+    }
+  }
+
+  function startEdit(cat: ResourceCategory) {
+    setEditId(cat.id);
+    setForm({
+      slug: cat.slug,
+      name_en: cat.name_en,
+      name_my: cat.name_my || "",
+      group_name: cat.group_name || "",
+      display_order: String(cat.display_order),
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      {/* Add form */}
+      {/* Form */}
       <div className="rounded-2xl border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 text-lg font-bold text-gray-900">Add New Category</h2>
+        <h2 className="mb-4 text-lg font-bold text-gray-900">{editId ? "Edit Category" : "Add New Category"}</h2>
         {msg && (
           <div className={`mb-4 flex items-center justify-between rounded-xl border px-4 py-3 text-sm ${msg.ok ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-red-200 bg-red-50 text-red-800"}`}>
             {msg.text}
@@ -88,14 +131,20 @@ function CategoriesPanel({ token }: { token: string }) {
           </div>
         )}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-gray-700">Name (English) *</label>
-            <input value={form.name_en} onChange={(e) => handleNameChange(e.target.value)} required placeholder="e.g. Legal Aid" className={inputCls} />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-gray-700">Name (English) *</label>
+              <input value={form.name_en} onChange={(e) => handleNameChange(e.target.value)} required placeholder="e.g. Legal Aid" className={inputCls} />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-gray-700">Slug *</label>
+              <input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} required placeholder="e.g. legal-aid" disabled={!!editId} className={inputCls} />
+            </div>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-semibold text-gray-700">Slug *</label>
-            <input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} required placeholder="e.g. legal-aid" className={inputCls} />
-            <p className="mt-1 text-xs text-gray-400">Auto-generated from name. Lowercase letters and hyphens only.</p>
+            <label className="mb-1 block text-xs font-semibold text-gray-700">Knowledge Domain (Group) - matches UI category</label>
+            <input value={form.group_name} onChange={(e) => setForm({ ...form, group_name: e.target.value })} placeholder="e.g. Community Organizations" className={inputCls} />
+            <p className="mt-1 text-[10px] text-gray-400 font-medium">Items with the same group name will be grouped together in the sidebar.</p>
           </div>
           <div>
             <label className="mb-1 block text-xs font-semibold text-gray-700">Name (Burmese)</label>
@@ -104,11 +153,18 @@ function CategoriesPanel({ token }: { token: string }) {
           <div>
             <label className="mb-1 block text-xs font-semibold text-gray-700">Display Order</label>
             <input type="number" min="0" value={form.display_order} onChange={(e) => setForm({ ...form, display_order: e.target.value })} placeholder="0" className={inputCls} />
-            <p className="mt-1 text-xs text-gray-400">Lower number = appears first.</p>
           </div>
-          <button type="submit" disabled={saving} className="w-full rounded-xl bg-blue-600 py-2.5 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-60">
-            {saving ? "Creating…" : "Create Category"}
-          </button>
+
+          <div className="flex gap-3 pt-2">
+            <button type="submit" disabled={saving} className="flex-1 rounded-xl bg-blue-600 py-3 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-60">
+              {saving ? "Saving…" : editId ? "Save Changes" : "Create Category"}
+            </button>
+            {editId && (
+              <button type="button" onClick={() => { setEditId(null); setForm(EMPTY_FORM); }} className="rounded-xl border border-gray-300 px-6 py-2.5 text-sm font-semibold text-gray-600 hover:bg-gray-50">
+                Cancel
+              </button>
+            )}
+          </div>
         </form>
       </div>
 
@@ -124,17 +180,32 @@ function CategoriesPanel({ token }: { token: string }) {
           </div>
         ) : categories.length === 0 ? (
           <div className="rounded-xl border-2 border-dashed border-gray-200 py-10 text-center text-sm text-gray-400">
-            No categories yet. Add one using the form.
+            No categories yet.
           </div>
         ) : (
           <div className="space-y-2">
-            {[...categories].sort((a, b) => a.display_order - b.display_order || a.name_en.localeCompare(b.name_en)).map((cat) => (
-              <div key={cat.id} className="flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+            {[...categories].sort((a, b) => (a.group_name || "").localeCompare(b.group_name || "") || a.display_order - b.display_order || a.name_en.localeCompare(b.name_en)).map((cat) => (
+              <div key={cat.id} className="group relative flex items-center gap-3 rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 hover:border-blue-200 hover:bg-blue-50/30">
                 <span className="text-xl">{CAT_ICONS[cat.slug] ?? "📁"}</span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900">{cat.name_en}</p>
-                  {cat.name_my && <p className="text-xs text-gray-500">{cat.name_my}</p>}
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-semibold text-gray-900">{cat.name_en}</p>
+                    {cat.group_name && (
+                      <span className="rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold uppercase text-blue-700">
+                        {cat.group_name}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs text-gray-400">/{cat.slug} · order {cat.display_order}</p>
+                </div>
+
+                <div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                  <button onClick={() => startEdit(cat)} className="rounded-lg bg-white p-1.5 text-blue-600 shadow-sm hover:bg-blue-50" title="Edit">
+                    ✏️
+                  </button>
+                  <button onClick={() => handleDelete(cat.id, cat.name_en)} className="rounded-lg bg-white p-1.5 text-red-600 shadow-sm hover:bg-red-50" title="Delete">
+                    🗑️
+                  </button>
                 </div>
               </div>
             ))}

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import {
   adminListAllNews, adminCreateNews, adminUpdateNews, adminDeleteNews,
   getNewsCategories, adminCreateNewsCategory, adminUpdateNewsCategory, adminDeleteNewsCategory,
+  adminUploadNewsImage,
   type NewsPost, type NewsCategory,
 } from "@/lib/api";
 
@@ -25,6 +26,7 @@ const EMPTY_FORM = {
   title_en: "", title_my: "", title_th: "", title_ms: "",
   body_en: "", body_my: "", body_th: "", body_ms: "",
   slug: "", status: "draft" as string, category_ids: [] as number[],
+  image_url: "" as string | null,
 };
 
 function slugify(s: string): string {
@@ -108,6 +110,7 @@ export default function AdminNewsPage() {
       slug: post.slug,
       status: post.status,
       category_ids: post.categories.map((c) => c.id),
+      image_url: post.image_url ?? "",
     });
     setLangTab("en");
     setSlugManuallyEdited(true); // existing slug should not auto-update
@@ -378,6 +381,52 @@ export default function AdminNewsPage() {
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* Image Upload */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Cover Image</label>
+              <div className="mt-1 flex items-center gap-4">
+                {form.image_url ? (
+                  <div className="relative h-20 w-32 shrink-0 overflow-hidden rounded-lg border border-gray-200">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={form.image_url} alt="Cover" className="h-full w-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => setForm({ ...form, image_url: "" })}
+                      className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] text-white hover:bg-red-600"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex h-20 w-32 shrink-0 items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 text-gray-400">
+                    <span className="text-[10px] font-bold uppercase tracking-wider">No photo</span>
+                  </div>
+                )}
+                <div className="flex-1">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file && token) {
+                        try {
+                          setSaving(true);
+                          const { url } = await adminUploadNewsImage(token, file);
+                          setForm({ ...form, image_url: url });
+                        } catch (err: any) {
+                          setError(err.message || "Upload failed");
+                        } finally {
+                          setSaving(false);
+                        }
+                      }
+                    }}
+                    className="block w-full text-xs text-gray-500 file:mr-4 file:rounded-full file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-xs file:font-semibold file:text-blue-700 hover:file:bg-blue-100"
+                  />
+                  <p className="mt-1 text-[10px] text-gray-400 font-medium">JPG, PNG or WEBP. Max 2MB.</p>
+                </div>
+              </div>
             </div>
 
             {/* Action buttons */}

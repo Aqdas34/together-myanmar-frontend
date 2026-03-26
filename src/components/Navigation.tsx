@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
-import { getMe, getUnreadNotificationCount, getPublicSettings } from "@/lib/api";
+import { getMe, getUnreadNotificationCount, getPublicSettings, getNotifications, markAllNotificationsRead, markNotificationRead } from "@/lib/api";
 import { useLanguage } from "@/lib/language-context";
 
 const NAV_LINKS = [
@@ -69,11 +69,61 @@ export default function Navigation() {
     return true;
   });
 
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowNotifications(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  async function toggleNotifications() {
+    if (!showNotifications) {
+      const token = localStorage.getItem("access_token");
+      if (token) {
+        try {
+          const data = await getNotifications(token);
+          setNotifications(data);
+        } catch (err) {}
+      }
+    }
+    setShowNotifications(!showNotifications);
+  }
+
+  async function handleMarkAllAsRead() {
+    const token = localStorage.getItem("access_token");
+    if (token) {
+      try {
+        await markAllNotificationsRead(token);
+        setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+        setUnreadCount(0);
+      } catch (err) {}
+    }
+  }
+
+  async function handleMarkRead(id: string) {
+    const token = localStorage.getItem("access_token");
+    if (token) {
+      try {
+        await markNotificationRead(token, id);
+        setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, is_read: true } : n));
+        setUnreadCount((prev) => Math.max(0, prev - 1));
+      } catch (err) {}
+    }
+  }
+
   function handleSignOut() {
     localStorage.removeItem("access_token");
     setIsLoggedIn(false);
     setUnreadCount(0);
     if (pollRef.current) clearInterval(pollRef.current);
+    setShowNotifications(false);
     router.push("/");
   }
 
@@ -180,19 +230,85 @@ export default function Navigation() {
 
             {isLoggedIn ? (
               <div className="flex items-center gap-3">
-                <Link
-                  href="/reconnection"
-                  className="relative flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 transition-all hover:bg-slate-100 hover:text-slate-800"
-                >
-                  <svg className="h-[20px] w-[20px]" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7a6 6 0 10-12 0v.7c0 2.123-.733 4.05-1.957 5.552a23.909 23.909 0 005.454 1.31m5.454 0a17.45 17.45 0 01-10.908 0M15 19.128a3 3 0 11-6 0" />
-                  </svg>
-                  {unreadCount > 0 && (
-                    <span className="absolute right-1.5 top-1.5 flex h-[16px] w-[16px] items-center justify-center rounded-full bg-primary-600 text-[9px] font-bold text-white ring-2 ring-white">
-                      {unreadCount > 9 ? "9+" : unreadCount}
-                    </span>
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    onClick={toggleNotifications}
+                    className={`relative flex h-9 w-9 items-center justify-center rounded-lg transition-all ${
+                      showNotifications 
+                        ? "bg-primary-50 text-primary-600" 
+                        : "text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+                    }`}
+                  >
+                    <svg className="h-[20px] w-[20px]" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7a6 6 0 10-12 0v.7c0 2.123-.733 4.05-1.957 5.552a23.909 23.909 0 005.454 1.31m5.454 0a17.45 17.45 0 01-10.908 0M15 19.128a3 3 0 11-6 0" />
+                    </svg>
+                    {unreadCount > 0 && (
+                      <span className="absolute right-1.5 top-1.5 flex h-[16px] w-[16px] items-center justify-center rounded-full bg-primary-600 text-[9px] font-bold text-white ring-2 ring-white">
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
+                  </button>
+
+                  {/* Notification Dropdown */}
+                  {showNotifications && (
+                    <div className="absolute right-0 mt-2 w-80 origin-top-right rounded-2xl bg-white p-2 shadow-xl ring-1 ring-slate-200 focus:outline-none z-[60]">
+                      <div className="flex items-center justify-between px-3 py-2 border-b border-slate-50 mb-1">
+                        <span className="text-[13px] font-black text-slate-900 uppercase tracking-tight">Notifications</span>
+                        {unreadCount > 0 && (
+                          <button 
+                            onClick={handleMarkAllAsRead}
+                            className="text-[11px] font-bold text-primary-600 hover:text-primary-700"
+                          >
+                            Mark all read
+                          </button>
+                        )}
+                      </div>
+                      
+                      <div className="max-h-[360px] overflow-y-auto overflow-x-hidden scrollbar-hide py-1">
+                        {notifications.length === 0 ? (
+                           <div className="py-12 text-center">
+                              <span className="text-3xl grayscale opacity-20 block mb-3">🔔</span>
+                              <p className="text-[12px] font-bold text-slate-400">All caught up!</p>
+                           </div>
+                        ) : (
+                          <div className="flex flex-col gap-1">
+                            {notifications.map((n) => (
+                              <Link
+                                key={n.id}
+                                href={n.type === 'new_message' ? `/reconnection/messages/${n.reference_id}` : '/reconnection'}
+                                onClick={() => {
+                                  setShowNotifications(false);
+                                  if (!n.is_read) handleMarkRead(n.id);
+                                }}
+                                className={`group flex flex-col gap-1.5 rounded-xl p-3 text-left transition-all ${
+                                  !n.is_read ? "bg-primary-50/40" : "hover:bg-slate-50"
+                                }`}
+                              >
+                                <div className="flex items-start justify-between gap-3">
+                                   <div className={`h-2 w-2 rounded-full mt-1.5 shrink-0 ${!n.is_read ? 'bg-primary-600' : 'bg-transparent'}`} />
+                                   <p className={`text-[12.5px] leading-relaxed flex-1 ${!n.is_read ? 'font-bold text-slate-900' : 'font-medium text-slate-600'}`}>
+                                      {n.message}
+                                   </p>
+                                </div>
+                                <span className="text-[10px] font-bold text-slate-400 pl-5 uppercase tracking-tight">
+                                   {new Date(n.created_at).toLocaleDateString()}
+                                </span>
+                              </Link>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      
+                      <Link
+                        href="/reconnection"
+                        onClick={() => setShowNotifications(false)}
+                        className="mt-1 block rounded-xl bg-slate-50 py-2.5 text-center text-[12px] font-bold text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-all border border-slate-100"
+                      >
+                         See all updates
+                      </Link>
+                    </div>
                   )}
-                </Link>
+                </div>
 
                 <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50/50 p-1 pr-3">
                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary-600 text-[10px] font-bold text-white">
@@ -288,6 +404,22 @@ export default function Navigation() {
 
             {isLoggedIn ? (
               <div className="flex flex-col gap-2">
+                <Link
+                  href="/reconnection"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-800"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-lg">🔔</span>
+                    <span>{t("nav.notifications")}</span>
+                  </div>
+                  {unreadCount > 0 && (
+                     <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary-600 text-[10px] font-bold text-white">
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                     </span>
+                  )}
+                </Link>
+
                 <Link
                   href="/user/profile"
                   onClick={() => setIsOpen(false)}

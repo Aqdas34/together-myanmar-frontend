@@ -25,6 +25,7 @@ export const TRANSLATIONS: Record<string, Record<Lang, string>> = {
   "nav.join":            { en: "Join Free →",            my: "အခမဲ့ ပါဝင်ရန် →" },
   "nav.signout":         { en: "Sign Out",               my: "ထွက်ရန်" },
   "nav.profile":         { en: "My Profile",             my: "ကျွန်ုပ်ပရိုဖိုင်" },
+  "nav.notifications":   { en: "Notifications",          my: "အကြောင်းကြားချက်များ" },
 
   // Homepage hero
   "hero.join":           { en: "Join Now →",             my: "ယခုပါဝင်ရန် →" },

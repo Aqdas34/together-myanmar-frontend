@@ -427,53 +427,71 @@ export default function DiasporaDirectoryPage() {
       </header>
 
       {/* Search and filter */}
-      <section className="bg-white sticky top-[64px] z-20 border-b border-slate-100 shadow-sm px-6 py-5">
-        <div className="mx-auto max-w-7xl flex flex-col gap-3">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1">
-               <span className="absolute left-4 top-1/2 -translate-y-1/2 opacity-30">🔍</span>
-               <input
-                 type="text"
-                 placeholder="Search by name, location, organization, or mission..."
-                 className="input-modern pl-11 h-12 py-1 shadow-sm border-slate-200 focus:border-primary-300"
-                 value={search}
-                 onChange={(e) => setSearch(e.target.value)}
-               />
-               <p className="text-[14px] font-medium text-slate-500 mt-2 ml-2">Search by name, location, organization, or mission.</p>
+      <section className="bg-white sticky top-[64px] z-20 border-b border-slate-100 shadow-sm px-6 py-6">
+        <div className="mx-auto max-w-7xl">
+          <div className="flex flex-col lg:flex-row gap-6 lg:items-center">
+            {/* Search Part */}
+            <div className="flex-1 min-w-0">
+               <div className="relative group">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary-500 transition-colors">🔍</span>
+                  <input
+                    type="text"
+                    placeholder="Search community profiles..."
+                    className="input-modern pl-11 h-[52px] shadow-sm border-slate-200 focus:border-primary-300 w-full"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+               </div>
+               <p className="hidden md:block text-[11px] font-bold text-slate-400 mt-2 ml-1 uppercase tracking-tight opacity-70">
+                  Search by name, location, organization, or mission
+               </p>
             </div>
-            <div className="flex flex-wrap gap-2 w-full flex-1 md:flex-none">
-                <select
-                  className="input-modern bg-slate-50 border-slate-200 h-12 text-sm font-bold w-full md:w-auto flex-1 min-w-[150px]"
-                  value={countryFilter}
-                  onChange={(e) => setCountryFilter(e.target.value)}
-                >
-                  <option value="">Global Coverage (All Countries)</option>
-                  {countries.map(c => (
-                    <option key={c.id} value={c.id}>{c.name_en}</option>
-                  ))}
-                </select>
-                <select
-                  className="input-modern bg-slate-50 border-slate-200 h-12 text-sm font-bold w-full md:w-auto flex-1 min-w-[150px]"
-                  value={locationFilter}
-                  onChange={(e) => setLocationFilter(e.target.value)}
-                >
-                  <option value="">All Regions</option>
-                  <option value="Asia">Asia</option>
-                  <option value="North America">North America</option>
-                  <option value="Europe">Europe</option>
-                  <option value="Australia">Australia</option>
-                </select>
-              <select
-                className="input-modern bg-slate-50 border-slate-200 h-12 text-sm font-bold w-full md:w-auto flex-1 min-w-[150px]"
-                value={typeFilter}
-                onChange={(e) => setTypeFilter(e.target.value)}
-              >
-                <option value="">All Profiles</option>
-                <option value="individual">👤 Individual</option>
-                <option value="organization">🏢 Organization</option>
-                <option value="community_group">🤝 Community Group</option>
-                <option value="advocacy">⚖️ Advocacy Initiative</option>
-              </select>
+
+            {/* Filters Part */}
+            <div className="flex flex-wrap md:flex-nowrap gap-3 shrink-0">
+                <div className="flex flex-col gap-1.5 flex-1 min-w-[160px]">
+                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Country</span>
+                   <select
+                     className="input-modern bg-slate-50 border-slate-200 h-[52px] text-[13px] font-bold py-0"
+                     value={countryFilter}
+                     onChange={(e) => setCountryFilter(e.target.value)}
+                   >
+                     <option value="">Global Coverage</option>
+                     {countries.map(c => (
+                       <option key={c.id} value={c.id}>{c.name_en}</option>
+                     ))}
+                   </select>
+                </div>
+                
+                <div className="flex flex-col gap-1.5 flex-1 min-w-[160px]">
+                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Region</span>
+                   <select
+                     className="input-modern bg-slate-50 border-slate-200 h-[52px] text-[13px] font-bold py-0"
+                     value={locationFilter}
+                     onChange={(e) => setLocationFilter(e.target.value)}
+                   >
+                     <option value="">All Regions</option>
+                     <option value="Asia">Asia</option>
+                     <option value="North America">North America</option>
+                     <option value="Europe">Europe</option>
+                     <option value="Australia">Australia</option>
+                   </select>
+                </div>
+
+                <div className="flex flex-col gap-1.5 flex-1 min-w-[160px]">
+                   <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Type</span>
+                   <select
+                     className="input-modern bg-slate-50 border-slate-200 h-[52px] text-[13px] font-bold py-0"
+                     value={typeFilter}
+                     onChange={(e) => setTypeFilter(e.target.value)}
+                   >
+                     <option value="">All Profiles</option>
+                     <option value="individual">👤 Individual</option>
+                     <option value="organization">🏢 Organization</option>
+                     <option value="community_group">🤝 Community Group</option>
+                     <option value="advocacy">⚖️ Advocacy Initiative</option>
+                   </select>
+                </div>
             </div>
           </div>
         </div>
