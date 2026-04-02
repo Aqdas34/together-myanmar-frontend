@@ -465,10 +465,10 @@ function UserProfileInner() {
                     <input type="checkbox" checked={allowRequests} onChange={e => setAllowRequests(e.target.checked)} />
                     <span>Allow connection requests</span>
                   </label>
-                  <label className="flex items-center gap-3">
+                  {/* <label className="flex items-center gap-3">
                     <input type="checkbox" checked={showInDirectory} onChange={e => setShowInDirectory(e.target.checked)} />
                     <span>Show in Community Directory</span>
-                  </label>
+                  </label> */}
                </div>
                <button type="submit" className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-xl">Save Privacy</button>
             </form>
